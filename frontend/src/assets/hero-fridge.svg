@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="50%" stop-color="#022c22" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="fridgeBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e2e8f0" />
+      <stop offset="50%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#059669" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <circle cx="400" cy="300" r="200" fill="url(#emeraldGlow)"/>
+
+  <!-- Refrigerator Body -->
+  <rect x="260" y="100" width="280" height="420" rx="16" fill="url(#fridgeBody)" stroke="#94a3b8" stroke-width="4"/>
+  
+  <!-- Double Doors Divider -->
+  <line x1="400" y1="105" x2="400" y2="515" stroke="#64748b" stroke-width="3"/>
+  <line x1="265" y1="280" x2="535" y2="280" stroke="#94a3b8" stroke-width="2"/>
+
+  <!-- Handles -->
+  <rect x="385" y="180" width="8" height="70" rx="4" fill="#475569"/>
+  <rect x="407" y="180" width="8" height="70" rx="4" fill="#475569"/>
+  <rect x="385" y="320" width="8" height="90" rx="4" fill="#475569"/>
+  <rect x="407" y="320" width="8" height="90" rx="4" fill="#475569"/>
+
+  <!-- Smart Screen -->
+  <rect x="430" y="140" width="80" height="110" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2"/>
+  <text x="470" y="170" fill="#34d399" font-family="sans-serif" font-weight="bold" font-size="14" text-anchor="middle">3°C | -18°C</text>
+  <circle cx="470" cy="205" r="16" fill="#10b981" opacity="0.3"/>
+  <text x="470" y="210" fill="#ffffff" font-family="sans-serif" font-size="12" text-anchor="middle">⚡ Smart</text>
+
+  <!-- Badge Text -->
+  <rect x="270" y="45" width="260" height="40" rx="20" fill="#34d399" opacity="0.2"/>
+  <text x="400" y="70" fill="#34d399" font-family="sans-serif" font-weight="bold" font-size="16" text-anchor="middle">DOUBLE DOOR SMART FRIDGE</text>
+</svg>

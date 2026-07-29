@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaTruck, FaShieldAlt, FaHeadset, FaUndo, FaStar } from 'react-icons/fa';
 import ProductCard from '../components/ProductCard';
+import HeroSlider from '../components/HeroSlider';
 import { Loader } from '../components/common';
 import { productService, categoryService } from '../services';
 import { getImageUrl } from '../utils/helpers';
@@ -56,35 +57,8 @@ const HomePage = () => {
 
   return (
     <div>
-      {/* Hero Banner */}
-      <section className="relative bg-gradient-to-r from-dark via-dark-light to-dark overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 text-white animate-slide-up">
-            <p className="text-primary font-semibold mb-2">New Season Sale</p>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-              Premium Electronics<br />At Unbeatable Prices
-            </h1>
-            <p className="text-gray-300 mb-8 text-lg max-w-lg">
-              Discover the latest Televisions, Refrigerators, ACs, Washing Machines and more with up to 40% off.
-            </p>
-            <div className="flex gap-4">
-              <Link to="/products" className="bg-primary hover:bg-primary-dark text-dark font-bold px-8 py-3 rounded-full transition">
-                Shop Now
-              </Link>
-              <Link to="/categories" className="border-2 border-white text-white hover:bg-white hover:text-dark font-semibold px-8 py-3 rounded-full transition">
-                Browse Categories
-              </Link>
-            </div>
-          </div>
-          <div className="flex-1 hidden md:block">
-            <img
-              src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600"
-              alt="Electronics"
-              className="rounded-2xl shadow-2xl animate-fade-in"
-            />
-          </div>
-        </div>
-      </section>
+      {/* Hero Slider with Active Offers and Trending Launches */}
+      <HeroSlider />
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Featured Categories */}
