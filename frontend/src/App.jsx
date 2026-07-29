@@ -28,6 +28,7 @@ import CategoriesAdminPage from './pages/admin/CategoriesAdminPage';
 import BrandsAdminPage from './pages/admin/BrandsAdminPage';
 import OrdersAdminPage from './pages/admin/OrdersAdminPage';
 import UsersAdminPage from './pages/admin/UsersAdminPage';
+import AdminDeliveryCities from './pages/admin/AdminDeliveryCities';
 
 function App() {
   return (
@@ -65,6 +66,7 @@ function App() {
               <Route path="brands" element={<BrandsAdminPage />} />
               <Route path="orders" element={<OrdersAdminPage />} />
               <Route path="users" element={<UsersAdminPage />} />
+              <Route path="delivery-cities" element={<AdminDeliveryCities />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaMapMarkerAlt, FaMoneyBillWave, FaCreditCard } from 'react-icons/fa';
 import { useCart, useAuth } from '../context/AppContext';
-import { orderService } from '../services';
+import { orderService, deliveryCityService } from '../services';
 import { formatPrice, getDiscountedPrice, getImageUrl } from '../utils/helpers';
 import { Alert } from '../components/common';
 
@@ -28,7 +28,16 @@ const CheckoutPage = () => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
     return acc + price * item.quantity;
   }, 0);
-  const shipping = subtotal > 5000 ? 0 : 99;
+  const [deliveryCities, setDeliveryCities] = useState([]);
+  
+  useEffect(() => {
+    deliveryCityService.getAll().then(res => setDeliveryCities(res.data)).catch(console.error);
+  }, []);
+
+  const isFreeDelivery = address.city && deliveryCities.some(
+    c => c.cityName.toLowerCase() === address.city.trim().toLowerCase()
+  );
+  const shipping = address.city ? (isFreeDelivery ? 0 : 99) : 99;
   const total = subtotal + shipping;
 
   const handleSubmit = async (e) => {
