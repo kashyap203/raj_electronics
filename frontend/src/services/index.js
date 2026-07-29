@@ -1,0 +1,72 @@
+import api from './api.js';
+
+export const authService = {
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+  getProfile: () => api.get('/auth/profile'),
+  updateProfile: (data) => api.put('/auth/profile', data),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
+  addAddress: (data) => api.post('/auth/addresses', data),
+  updateAddress: (id, data) => api.put(`/auth/addresses/${id}`, data),
+  deleteAddress: (id) => api.delete(`/auth/addresses/${id}`),
+};
+
+export const productService = {
+  getAll: (params) => api.get('/products', { params }),
+  getById: (id) => api.get(`/products/${id}`),
+  getBySlug: (slug) => api.get(`/products/slug/${slug}`),
+  getRelated: (id) => api.get(`/products/${id}/related`),
+  create: (data) => api.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id, data) => api.put(`/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id) => api.delete(`/products/${id}`),
+  addReview: (id, data) => api.post(`/products/${id}/reviews`, data),
+};
+
+export const categoryService = {
+  getAll: () => api.get('/categories'),
+  getById: (id) => api.get(`/categories/${id}`),
+  create: (data) => api.post('/categories', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id, data) => api.put(`/categories/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id) => api.delete(`/categories/${id}`),
+};
+
+export const brandService = {
+  getAll: () => api.get('/brands'),
+  getById: (id) => api.get(`/brands/${id}`),
+  create: (data) => api.post('/brands', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id, data) => api.put(`/brands/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id) => api.delete(`/brands/${id}`),
+};
+
+export const cartService = {
+  get: () => api.get('/cart'),
+  add: (productId, quantity = 1) => api.post('/cart', { productId, quantity }),
+  update: (productId, quantity) => api.put(`/cart/${productId}`, { quantity }),
+  remove: (productId) => api.delete(`/cart/${productId}`),
+  clear: () => api.delete('/cart'),
+};
+
+export const wishlistService = {
+  get: () => api.get('/wishlist'),
+  add: (productId) => api.post('/wishlist', { productId }),
+  remove: (productId) => api.delete(`/wishlist/${productId}`),
+};
+
+export const orderService = {
+  create: (data) => api.post('/orders', data),
+  getMyOrders: () => api.get('/orders/my'),
+  getById: (id) => api.get(`/orders/${id}`),
+  cancel: (id) => api.put(`/orders/${id}/cancel`),
+  getAll: (params) => api.get('/orders', { params }),
+  updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
+  getSalesSummary: () => api.get('/orders/sales-summary'),
+};
+
+export const userService = {
+  getAll: () => api.get('/users'),
+  getById: (id) => api.get(`/users/${id}`),
+  update: (id, data) => api.put(`/users/${id}`, data),
+  block: (id) => api.put(`/users/${id}/block`),
+  delete: (id) => api.delete(`/users/${id}`),
+};
