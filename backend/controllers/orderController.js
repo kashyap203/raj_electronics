@@ -1,6 +1,7 @@
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Cart from '../models/Cart.js';
+import DeliveryCity from '../models/DeliveryCity.js';
 
 export const createOrder = async (req, res) => {
   const { orderItems, address, paymentMethod = 'Cash on Delivery' } = req.body;
@@ -38,7 +39,17 @@ export const createOrder = async (req, res) => {
     await product.save();
   }
 
-  const shippingPrice = itemsPrice > 5000 ? 0 : 99;
+  let shippingPrice = 99; // Standard shipping
+  if (address && address.city) {
+    const isFreeDelivery = await DeliveryCity.findOne({ 
+      cityName: { $regex: new RegExp(`^${address.city}$`, 'i') } 
+    });
+    
+    if (isFreeDelivery) {
+      shippingPrice = 0;
+    }
+  }
+
   const total = itemsPrice + shippingPrice;
 
   const order = await Order.create({

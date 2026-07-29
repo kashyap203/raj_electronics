@@ -14,6 +14,7 @@ import cartRoutes from './routes/cartRoutes.js';
 import wishlistRoutes from './routes/wishlistRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import deliveryCityRoutes from './routes/deliveryCityRoutes.js';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/delivery-cities', deliveryCityRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

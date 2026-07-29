@@ -70,3 +70,9 @@ export const userService = {
   block: (id) => api.put(`/users/${id}/block`),
   delete: (id) => api.delete(`/users/${id}`),
 };
+
+export const deliveryCityService = {
+  getAll: () => api.get('/delivery-cities'),
+  add: (data) => api.post('/delivery-cities', data),
+  delete: (id) => api.delete(`/delivery-cities/${id}`),
+};

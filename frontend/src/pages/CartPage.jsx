@@ -14,8 +14,8 @@ const CartPage = () => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
     return acc + price * item.quantity;
   }, 0);
-  const shipping = subtotal > 5000 ? 0 : items.length > 0 ? 99 : 0;
-  const total = subtotal + shipping;
+  const shippingText = "Calculated at checkout";
+  const totalText = "Calculated at checkout";
 
   if (items.length === 0) {
     return (
@@ -100,14 +100,11 @@ const CartPage = () => {
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
-                <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
+                <span className="text-xs text-gray-500 mt-1">{shippingText}</span>
               </div>
-              {shipping > 0 && (
-                <p className="text-xs text-gray-400">Add {formatPrice(5000 - subtotal)} more for free shipping</p>
-              )}
               <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-base text-gray-800">
                 <span>Total</span>
-                <span>{formatPrice(total)}</span>
+                <span className="text-sm text-gray-500 font-normal">{totalText}</span>
               </div>
             </div>
             <button
