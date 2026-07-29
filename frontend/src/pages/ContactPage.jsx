@@ -79,7 +79,7 @@ const ContactPage = () => {
                   </div>
                   <h3 className="text-xl font-bold text-gray-800 mb-2">Message Sent!</h3>
                   <p className="text-gray-500 mb-4">Thank you for reaching out. We'll get back to you within 24 hours.</p>
-                  <button onClick={() => setSubmitted(false)} className="bg-primary text-dark font-semibold px-6 py-2 rounded-full hover:bg-primary-dark transition">
+                  <button onClick={() => setSubmitted(false)} className="bg-primary text-white font-semibold px-6 py-2 rounded-full hover:bg-primary-dark transition">
                     Send Another Message
                   </button>
                 </div>

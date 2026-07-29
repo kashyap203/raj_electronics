@@ -146,7 +146,7 @@ const HeroSlider = () => {
                 <div className="flex flex-wrap items-center gap-4">
                   <Link
                     to={slide.primaryBtnLink}
-                    className="bg-primary hover:bg-primary-dark text-dark font-bold px-8 py-4 rounded-full shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 text-sm md:text-base"
+                    className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-full shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 text-sm md:text-base"
                   >
                     {slide.primaryBtnText}
                   </Link>
@@ -180,14 +180,14 @@ const HeroSlider = () => {
       <button
         onClick={prevSlide}
         aria-label="Previous Slide"
-        className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 hover:bg-primary text-white hover:text-dark backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
+        className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
       >
         <FaChevronLeft className="text-xl" />
       </button>
       <button
         onClick={nextSlide}
         aria-label="Next Slide"
-        className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 hover:bg-primary text-white hover:text-dark backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
+        className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
       >
         <FaChevronRight className="text-xl" />
       </button>

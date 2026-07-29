@@ -25,7 +25,7 @@ const CartPage = () => {
           title="Your cart is empty"
           description="Looks like you haven't added anything yet"
           action={
-            <Link to="/products" className="bg-primary text-dark font-bold px-8 py-3 rounded-full hover:bg-primary-dark transition inline-block">
+            <Link to="/products" className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:bg-primary-dark transition inline-block">
               Start Shopping
             </Link>
           }
@@ -109,7 +109,7 @@ const CartPage = () => {
             </div>
             <button
               onClick={() => navigate('/checkout')}
-              className="w-full bg-primary hover:bg-primary-dark text-dark font-bold py-3 rounded-xl transition"
+              className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition"
             >
               Proceed to Checkout
             </button>

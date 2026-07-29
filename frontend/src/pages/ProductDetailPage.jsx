@@ -184,7 +184,7 @@ const ProductDetailPage = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0 || cartLoading}
-                className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-dark font-bold py-3 rounded-xl transition flex items-center justify-center gap-2"
+                className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2"
               >
                 <FaShoppingCart /> {cartLoading ? 'Adding...' : 'Add to Cart'}
               </button>
@@ -199,7 +199,7 @@ const ProductDetailPage = () => {
             <button
               onClick={() => { handleAddToCart().then(() => navigate('/cart')); }}
               disabled={product.stock === 0}
-              className="mt-3 w-full bg-dark hover:bg-dark-light disabled:opacity-50 text-white font-bold py-3 rounded-xl transition"
+              className="mt-3 w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold py-3 rounded-xl transition"
             >
               Buy Now
             </button>
@@ -279,7 +279,7 @@ const ProductDetailPage = () => {
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map(n => (
                           <button key={n} type="button" onClick={() => setReview(r => ({ ...r, rating: n }))}>
-                            <FaStar size={24} className={n <= review.rating ? 'text-primary' : 'text-gray-300'} />
+                            <FaStar size={24} className={n <= review.rating ? 'text-amber-400' : 'text-gray-300'} />
                           </button>
                         ))}
                       </div>
@@ -295,7 +295,7 @@ const ProductDetailPage = () => {
                         className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
                       />
                     </div>
-                    <button type="submit" disabled={reviewLoading} className="bg-primary hover:bg-primary-dark text-dark font-bold px-6 py-2.5 rounded-xl transition">
+                    <button type="submit" disabled={reviewLoading} className="bg-primary hover:bg-primary-dark text-white font-bold px-6 py-2.5 rounded-xl transition">
                       {reviewLoading ? 'Submitting...' : 'Submit Review'}
                     </button>
                   </form>

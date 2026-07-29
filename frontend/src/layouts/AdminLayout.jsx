@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { FaTachometerAlt, FaBox, FaTags, FaShoppingBag, FaUsers, FaStar, FaSignOutAlt, FaTruck } from 'react-icons/fa';
 import { useAuth } from '../context/AppContext';
+import logo from '../assets/logo.png';
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -23,12 +24,9 @@ const AdminLayout = () => {
     <div className="min-h-screen flex bg-gray-100">
       <aside className="w-64 bg-dark text-white shrink-0 hidden lg:block">
         <div className="p-6 border-b border-gray-700">
-          <div className="flex items-center gap-2">
-            <div className="bg-primary text-dark font-bold px-2 py-1 rounded">RE</div>
-            <div>
-              <p className="font-bold">Raj Electronics</p>
-              <p className="text-xs text-gray-400">Admin Panel</p>
-            </div>
+          <div className="flex flex-col gap-1">
+            <img src={logo} alt="Raj Electronics" className="h-16 md:h-20 w-auto object-contain" />
+            <p className="text-xs text-gray-400 mt-1">Admin Panel</p>
           </div>
         </div>
         <nav className="p-4 space-y-1">
@@ -37,7 +35,7 @@ const AdminLayout = () => {
               key={link.to}
               to={link.to}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                isActive(link) ? 'bg-primary text-dark font-semibold' : 'hover:bg-dark-light'
+                isActive(link) ? 'bg-primary text-white font-semibold' : 'hover:bg-dark-light'
               }`}
             >
               <link.icon />
@@ -65,7 +63,7 @@ const AdminLayout = () => {
                 key={link.to}
                 to={link.to}
                 className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
-                  isActive(link) ? 'bg-primary text-dark' : 'bg-dark-light'
+                  isActive(link) ? 'bg-primary text-white' : 'bg-dark-light'
                 }`}
               >
                 {link.label}

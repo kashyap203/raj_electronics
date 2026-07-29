@@ -232,7 +232,7 @@ const ProductsPage = () => {
               title="No products found"
               description="Try adjusting your filters or search terms"
               action={
-                <button onClick={clearFilters} className="bg-primary text-dark font-semibold px-6 py-2 rounded-full hover:bg-primary-dark transition">
+                <button onClick={clearFilters} className="bg-primary text-white font-semibold px-6 py-2 rounded-full hover:bg-primary-dark transition">
                   Clear Filters
                 </button>
               }

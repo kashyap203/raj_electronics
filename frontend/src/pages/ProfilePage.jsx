@@ -117,7 +117,7 @@ const ProfilePage = () => {
                 </div>
               </div>
             ))}
-            <button type="submit" disabled={saving} className="bg-primary hover:bg-primary-dark text-dark font-bold px-8 py-2.5 rounded-xl transition">
+            <button type="submit" disabled={saving} className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-2.5 rounded-xl transition">
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </form>
@@ -129,7 +129,7 @@ const ProfilePage = () => {
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-gray-800 flex items-center gap-2"><FaMapMarkerAlt className="text-primary" /> Saved Addresses</h2>
-            <button onClick={() => setShowAddressForm(!showAddressForm)} className="flex items-center gap-1 text-sm bg-primary hover:bg-primary-dark text-dark font-semibold px-4 py-2 rounded-xl transition">
+            <button onClick={() => setShowAddressForm(!showAddressForm)} className="flex items-center gap-1 text-sm bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-2 rounded-xl transition">
               <FaPlus size={12} /> Add New
             </button>
           </div>
@@ -160,7 +160,7 @@ const ProfilePage = () => {
                 <label htmlFor="isDefault" className="text-sm text-gray-600">Set as default address</label>
               </div>
               <div className="sm:col-span-2 flex gap-2">
-                <button type="submit" disabled={addressLoading} className="bg-primary text-dark font-semibold px-4 py-2 rounded-lg text-sm">
+                <button type="submit" disabled={addressLoading} className="bg-primary text-white font-semibold px-4 py-2 rounded-lg text-sm">
                   {addressLoading ? 'Saving...' : 'Save Address'}
                 </button>
                 <button type="button" onClick={() => setShowAddressForm(false)} className="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm">Cancel</button>
@@ -174,7 +174,7 @@ const ProfilePage = () => {
                 <div key={addr._id} className={`border rounded-xl p-4 ${addr.isDefault ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
                   <div className="flex justify-between">
                     <div>
-                      {addr.isDefault && <span className="text-xs bg-primary text-dark font-bold px-2 py-0.5 rounded-full mb-2 inline-block">Default</span>}
+                      {addr.isDefault && <span className="text-xs bg-primary text-white font-bold px-2 py-0.5 rounded-full mb-2 inline-block">Default</span>}
                       <p className="font-medium text-gray-800 text-sm">{addr.fullName}</p>
                       <p className="text-sm text-gray-600">{addr.street}, {addr.city}, {addr.state} - {addr.pincode}</p>
                       <p className="text-sm text-gray-500">{addr.phone}</p>
@@ -207,7 +207,7 @@ const ProfilePage = () => {
                 className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none"
               />
             </div>
-            <button type="submit" disabled={saving || !form.newPassword} className="bg-primary hover:bg-primary-dark disabled:opacity-50 text-dark font-bold px-8 py-2.5 rounded-xl transition">
+            <button type="submit" disabled={saving || !form.newPassword} className="bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold px-8 py-2.5 rounded-xl transition">
               {saving ? 'Updating...' : 'Update Password'}
             </button>
           </form>
