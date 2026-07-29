@@ -4,7 +4,7 @@ import { FaTruck, FaShieldAlt, FaHeadset, FaUndo, FaStar } from 'react-icons/fa'
 import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
 import { Loader } from '../components/common';
-import { productService, categoryService } from '../services';
+import { productService, categoryService, brandService } from '../services';
 import { getImageUrl } from '../utils/helpers';
 
 const HomePage = () => {
@@ -12,22 +12,34 @@ const HomePage = () => {
   const [latest, setLatest] = useState([]);
   const [bestSelling, setBestSelling] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
+
+  const brandLogosMap = {
+    'Samsung': 'https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg',
+    'LG': 'https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg',
+    'Sony': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg',
+    'Whirlpool': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Whirlpool_Corporation_logo.svg',
+    'Panasonic': 'https://upload.wikimedia.org/wikipedia/commons/7/71/Panasonic_logo_%28Blue%29.svg',
+    'Haier': 'https://upload.wikimedia.org/wikipedia/commons/3/36/Haier_logo.svg',
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [featRes, latestRes, bestRes, catRes] = await Promise.all([
+        const [featRes, latestRes, bestRes, catRes, brandRes] = await Promise.all([
           productService.getAll({ featured: true, limit: 8 }),
           productService.getAll({ sort: 'latest', limit: 8 }),
           productService.getAll({ bestSelling: true, limit: 8 }),
           categoryService.getAll(),
+          brandService.getAll()
         ]);
         setFeatured(featRes.data.products);
         setLatest(latestRes.data.products);
         setBestSelling(bestRes.data.products);
         setCategories(catRes.data);
+        setBrands(brandRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -59,6 +71,31 @@ const HomePage = () => {
     <div>
       {/* Hero Slider with Active Offers and Trending Launches */}
       <HeroSlider />
+
+      {/* Trusted Brands */}
+      {brands.length > 0 && (
+        <div className="bg-white border-y border-gray-100 py-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <p className="text-center text-sm font-semibold text-gray-400 uppercase tracking-widest mb-6">
+              Top Electronic Brands
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-70">
+              {brands.map(brand => {
+                const logoSrc = brand.logo ? getImageUrl(brand.logo) : brandLogosMap[brand.name];
+                return (
+                  <Link key={brand._id} to={`/products?brand=${brand._id}`} className="hover:opacity-100 transition-opacity duration-300">
+                    {logoSrc ? (
+                      <img src={logoSrc} alt={brand.name} className="h-6 md:h-8 object-contain grayscale hover:grayscale-0 transition" />
+                    ) : (
+                      <span className="text-xl md:text-2xl font-black tracking-tight text-gray-800">{brand.name}</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Featured Categories */}
