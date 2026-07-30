@@ -8,7 +8,7 @@ const populateCart = (query) =>
       { path: 'brand', select: 'name logo' },
       { path: 'category', select: 'name' },
     ],
-  });
+  }).populate('appliedOffer');
 
 export const getCart = async (req, res) => {
   let cart = await populateCart(Cart.findOne({ user: req.user._id }));
@@ -103,4 +103,19 @@ export const clearCart = async (req, res) => {
     await cart.save();
   }
   res.json({ message: 'Cart cleared' });
+};
+
+export const applyOffer = async (req, res) => {
+  const { offerId } = req.body;
+  const cart = await Cart.findOne({ user: req.user._id });
+  
+  if (!cart) {
+    return res.status(404).json({ message: 'Cart not found' });
+  }
+
+  cart.appliedOffer = offerId || null;
+  await cart.save();
+  
+  const populated = await populateCart(Cart.findById(cart._id));
+  res.json(populated);
 };

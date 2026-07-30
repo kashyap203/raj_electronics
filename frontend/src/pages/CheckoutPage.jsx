@@ -39,10 +39,20 @@ const CheckoutPage = () => {
   const [couponDiscount, setCouponDiscount] = useState(0);
 
   const items = cart.items || [];
+  const appliedOffer = cart.appliedOffer;
   const subtotal = items.reduce((acc, item) => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
     return acc + price * item.quantity;
   }, 0);
+
+  let offerDiscount = 0;
+  if (appliedOffer) {
+    if (appliedOffer.discountType === 'amount') {
+      offerDiscount = appliedOffer.discountValue;
+    } else {
+      offerDiscount = (subtotal * appliedOffer.discountValue) / 100;
+    }
+  }
   const [deliveryCities, setDeliveryCities] = useState([]);
   
   useEffect(() => {
@@ -53,7 +63,7 @@ const CheckoutPage = () => {
     c => c.cityName.toLowerCase() === address.city.trim().toLowerCase()
   );
   const shipping = address.city ? (isFreeDelivery ? 0 : 99) : 99;
-  const total = subtotal - couponDiscount + shipping;
+  const total = Math.max(0, subtotal - couponDiscount - offerDiscount) + shipping;
 
   const applyCoupon = () => {
     if (couponCode.trim().toUpperCase() === 'DISCOUNT10') {
@@ -345,6 +355,12 @@ const CheckoutPage = () => {
                   <div className="flex justify-between text-green-600 font-medium">
                     <span>Discount ({appliedCoupon})</span>
                     <span>-{formatPrice(couponDiscount)}</span>
+                  </div>
+                )}
+                {offerDiscount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Bank Offer Applied</span>
+                    <span>-{formatPrice(offerDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-gray-600">

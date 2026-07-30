@@ -33,6 +33,7 @@ const productSchema = new mongoose.Schema(
     featured: { type: Boolean, default: false },
     bestSelling: { type: Boolean, default: false },
     salesCount: { type: Number, default: 0 },
+    offers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Offer' }],
   },
   { timestamps: true }
 );

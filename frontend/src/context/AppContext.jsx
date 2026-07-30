@@ -111,6 +111,12 @@ export const CartProvider = ({ children }) => {
     setCart(data);
   };
 
+  const applyOfferToCart = async (offerId) => {
+    const { data } = await cartService.applyOffer(offerId);
+    setCart(data);
+    return data;
+  };
+
   const addToWishlist = async (productId) => {
     const { data } = await wishlistService.add(productId);
     setWishlist(data);
@@ -137,6 +143,7 @@ export const CartProvider = ({ children }) => {
         addToCart,
         updateCartItem,
         removeFromCart,
+        applyOfferToCart,
         addToWishlist,
         removeFromWishlist,
         isInWishlist,

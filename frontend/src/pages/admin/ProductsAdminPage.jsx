@@ -1,19 +1,20 @@
 import { useEffect, useState, useRef } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, FaImage } from 'react-icons/fa';
-import { productService, categoryService, brandService } from '../../services';
+import { productService, categoryService, brandService, offerService } from '../../services';
 import { Loader, Alert, Pagination } from '../../components/common';
 import { formatPrice, getDiscountedPrice, getImageUrl } from '../../utils/helpers';
 
 const EMPTY_FORM = {
   name: '', brand: '', category: '', price: '', discount: '0', stock: '',
   description: '', featured: false, bestSelling: false,
-  specifications: '', features: '',
+  specifications: '', features: '', offers: [],
 };
 
 const ProductsAdminPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [allOffers, setAllOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -43,6 +44,7 @@ const ProductsAdminPage = () => {
   useEffect(() => {
     categoryService.getAll().then(r => setCategories(r.data));
     brandService.getAll().then(r => setBrands(r.data));
+    offerService.getActive().then(r => setAllOffers(r.data));
   }, []);
 
   useEffect(() => { fetchProducts(); }, [search]);
@@ -56,6 +58,7 @@ const ProductsAdminPage = () => {
       price: p.price, discount: p.discount, stock: p.stock,
       description: p.description, featured: p.featured, bestSelling: p.bestSelling,
       specifications: specs, features: p.features?.join('\n') || '',
+      offers: p.offers?.map(o => (typeof o === 'string' ? o : o._id)) || [],
     });
     setExistingImages(p.images || []);
     setImages([]);
@@ -77,10 +80,11 @@ const ProductsAdminPage = () => {
       }
       const features = form.features.trim() ? form.features.split('\n').map(f => f.trim()).filter(Boolean) : [];
       Object.entries(form).forEach(([k, v]) => {
-        if (k !== 'specifications' && k !== 'features') fd.append(k, v);
+        if (k !== 'specifications' && k !== 'features' && k !== 'offers') fd.append(k, v);
       });
       fd.append('specifications', JSON.stringify(specs));
       fd.append('features', JSON.stringify(features));
+      fd.append('offers', JSON.stringify(form.offers));
       if (editing) fd.append('existingImages', JSON.stringify(existingImages));
       images.forEach(img => fd.append('images', img));
 
@@ -267,6 +271,31 @@ const ProductsAdminPage = () => {
                   <textarea rows={3} value={form.features} onChange={e => setForm(f => ({ ...f, features: e.target.value }))}
                     placeholder="4K Ultra HD Display&#10;Dolby Audio&#10;Smart TV with Netflix"
                     className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none" />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium mb-2">Available Bank Offers</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 max-h-40 overflow-y-auto">
+                    {allOffers.length > 0 ? allOffers.map(offer => (
+                      <label key={offer._id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded transition">
+                        <input 
+                          type="checkbox" 
+                          className="accent-primary" 
+                          checked={form.offers.includes(offer._id)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setForm(f => ({ ...f, offers: [...f.offers, offer._id] }));
+                            } else {
+                              setForm(f => ({ ...f, offers: f.offers.filter(id => id !== offer._id) }));
+                            }
+                          }}
+                        />
+                        <span className="truncate">{offer.bankName} - {offer.title}</span>
+                      </label>
+                    )) : (
+                      <p className="text-xs text-gray-500">No active offers available</p>
+                    )}
+                  </div>
                 </div>
               </div>
 

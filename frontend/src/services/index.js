@@ -45,6 +45,7 @@ export const cartService = {
   update: (productId, quantity) => api.put(`/cart/${productId}`, { quantity }),
   remove: (productId) => api.delete(`/cart/${productId}`),
   clear: () => api.delete('/cart'),
+  applyOffer: (offerId) => api.put('/cart/offer', { offerId }),
 };
 
 export const wishlistService = {
@@ -83,3 +84,10 @@ export const paymentService = {
   handleFailure: (data) => api.post('/payment/payment-failed', data),
 };
 
+export const offerService = {
+  getActive: () => api.get('/offers'),
+  getAll: () => api.get('/offers/all'),
+  create: (data) => api.post('/offers', data),
+  update: (id, data) => api.put(`/offers/${id}`, data),
+  delete: (id) => api.delete(`/offers/${id}`),
+};

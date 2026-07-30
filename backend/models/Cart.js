@@ -9,6 +9,7 @@ const cartSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
     items: [cartItemSchema],
+    appliedOffer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer', default: null },
   },
   { timestamps: true }
 );

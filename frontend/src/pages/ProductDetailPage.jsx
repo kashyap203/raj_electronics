@@ -17,6 +17,7 @@ import {
 } from 'react-icons/fa';
 import { Loader, StarRating, Alert, Breadcrumb } from '../components/common';
 import ProductCard from '../components/ProductCard';
+import BankOffers from '../components/BankOffers';
 import { productService } from '../services';
 import { formatPrice, getDiscountedPrice, getImageUrl } from '../utils/helpers';
 import { useAuth, useCart } from '../context/AppContext';
@@ -25,7 +26,7 @@ const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, applyOfferToCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -39,6 +40,7 @@ const ProductDetailPage = () => {
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState('');
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [appliedOffer, setAppliedOffer] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -56,9 +58,19 @@ const ProductDetailPage = () => {
   if (loading) return <Loader />;
   if (!product) return null;
 
-  const discountedPrice = getDiscountedPrice(product.price, product.discount);
+  const baseDiscountedPrice = getDiscountedPrice(product.price, product.discount);
+  
+  let finalPrice = baseDiscountedPrice;
+  if (appliedOffer) {
+    if (appliedOffer.discountType === 'amount') {
+      finalPrice = Math.max(0, finalPrice - appliedOffer.discountValue);
+    } else {
+      finalPrice = Math.max(0, finalPrice - (finalPrice * appliedOffer.discountValue) / 100);
+    }
+  }
+
   const inWishlist = isInWishlist(product._id);
-  const savings = product.price - discountedPrice;
+  const savings = product.price - finalPrice;
   const images = product.images?.length ? product.images : [''];
 
   const handleAddToCart = async () => {
@@ -225,7 +237,7 @@ const ProductDetailPage = () => {
                 {product.discount > 0 && (
                   <span className="text-red-600 font-extrabold text-2xl">-{product.discount}%</span>
                 )}
-                <span className="text-3xl font-extrabold text-gray-900">{formatPrice(discountedPrice)}</span>
+                <span className="text-3xl font-extrabold text-gray-900">{formatPrice(finalPrice)}</span>
               </div>
               {product.discount > 0 && (
                 <div className="text-xs text-gray-500 space-x-2">
@@ -235,6 +247,17 @@ const ProductDetailPage = () => {
               )}
               <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes. Free doorstep installation on selected electronics.</p>
             </div>
+
+            <BankOffers 
+              price={baseDiscountedPrice} 
+              onApplyOffer={async (offer) => {
+                if (!user) return navigate('/login');
+                setAppliedOffer(offer);
+                await applyOfferToCart(offer ? offer._id : null);
+              }} 
+              appliedOffer={appliedOffer} 
+              offers={product.offers}
+            />
 
             {/* Product Overview Highlights Table */}
             {quickSpecs.length > 0 && (
@@ -281,7 +304,7 @@ const ProductDetailPage = () => {
           <div className="lg:col-span-3 flex flex-col">
             <div className="bg-gray-50/90 rounded-2xl p-5 border border-gray-200/80 shadow-sm sticky top-24">
               <div className="mb-4">
-                <span className="text-2xl font-bold text-gray-900">{formatPrice(discountedPrice)}</span>
+                <span className="text-2xl font-bold text-gray-900">{formatPrice(finalPrice)}</span>
                 <p className="text-xs text-green-700 font-semibold mt-1 flex items-center gap-1">
                   <FaTruck className="text-green-600" /> FREE Delivery Eligible
                 </p>
