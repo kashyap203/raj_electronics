@@ -61,8 +61,10 @@ const CheckoutPage = () => {
     setLoading(true);
     setError('');
     try {
-      const orderItems = items.map(item => ({ product: item.product._id, quantity: item.quantity }));
-      const { data } = await orderService.create({ orderItems, address, paymentMethod, couponCode: appliedCoupon || undefined });
+      const orderItems = items
+        .filter(item => item.product && item.product._id)
+        .map(item => ({ product: item.product._id, quantity: item.quantity }));
+      const { data } = await orderService.create({ orderItems, address, paymentMethod });
       await fetchCart();
       navigate(`/profile/orders/${data._id}`, { state: { success: true } });
     } catch (err) {
