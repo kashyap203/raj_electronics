@@ -253,15 +253,24 @@ const OrderDetailPage = () => {
 
           <div className="bg-white rounded-2xl shadow-sm p-4">
             <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <FaCreditCard className="text-primary" size={14} /> Payment
+              <FaCreditCard className="text-primary" size={14} /> Payment Information
             </h3>
-            <p className="text-sm text-gray-600">{order.paymentMethod}</p>
+            <p className="text-sm text-gray-800 font-medium">{order.paymentMethod}</p>
+            {order.paymentDetails?.razorpayPaymentId && (
+              <p className="text-xs text-gray-500 mt-1 font-mono">
+                Payment ID: {order.paymentDetails.razorpayPaymentId}
+              </p>
+            )}
             <p
-              className={`text-sm font-medium mt-1 ${order.isPaid ? "text-green-600" : "text-yellow-600"}`}
+              className={`text-sm font-semibold mt-2 flex items-center gap-1.5 ${
+                order.isPaid ? 'text-green-600' : order.paymentDetails?.paymentStatus === 'Failed' ? 'text-red-600' : 'text-amber-600'
+              }`}
             >
               {order.isPaid
-                ? `✓ Paid on ${new Date(order.paidAt).toLocaleDateString("en-IN")}`
-                : "● Payment Pending"}
+                ? `✓ Paid on ${new Date(order.paidAt).toLocaleDateString('en-IN')}`
+                : order.paymentDetails?.paymentStatus === 'Failed'
+                ? `✗ Payment Failed: ${order.paymentDetails.failureReason || 'Declined'}`
+                : '● Payment Pending'}
             </p>
           </div>
         </div>

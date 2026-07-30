@@ -65,16 +65,13 @@ const Footer = () => {
           <ul className="space-y-3 text-sm text-gray-400">
             <li className="flex items-start gap-2">
               <FaMapMarkerAlt className="text-primary mt-1 shrink-0" />
-              <span>123 Electronics Market, MG Road, Bangalore - 560001</span>
+              <span>55-19-20, Shreedev Complex, opp. Post Office, Station Road, Patan.(N.G.) 384265</span>
             </li>
             <li className="flex items-center gap-2">
               <FaPhone className="text-primary shrink-0" />
-              <span>+91 98765 43210</span>
+              <span>+91 98243 45041</span>
             </li>
-            <li className="flex items-center gap-2">
-              <FaEnvelope className="text-primary shrink-0" />
-              <span>support@rajelectronics.com</span>
-            </li>
+            
           </ul>
         </div>
       </div>

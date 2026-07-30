@@ -17,8 +17,8 @@ const ContactPage = () => {
   };
 
   const contactInfo = [
-    { icon: FaPhone, label: 'Phone', value: '+91 98765 43210', href: 'tel:+919876543210' },
-    { icon: FaWhatsapp, label: 'WhatsApp', value: '+91 98765 43210', href: 'https://wa.me/919876543210' },
+    { icon: FaPhone, label: 'Phone', value: '+91 98243 45041', href: 'tel:+919824345041' },
+    { icon: FaWhatsapp, label: 'WhatsApp', value: '+91 98243 45041', href: 'https://wa.me/919824345041' },
     { icon: FaEnvelope, label: 'Email', value: 'support@rajelectronics.com', href: 'mailto:support@rajelectronics.com' },
     { icon: FaClock, label: 'Working Hours', value: 'Mon–Sat: 9AM – 8PM', href: null },
   ];
@@ -59,9 +59,9 @@ const ContactPage = () => {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium mb-0.5">Store Address</p>
-                  <p className="text-gray-800 font-semibold text-sm">123 Electronics Market</p>
-                  <p className="text-gray-600 text-sm">MG Road, Bangalore - 560001</p>
-                  <p className="text-gray-600 text-sm">Karnataka, India</p>
+                  <p className="text-gray-800 font-semibold text-sm">55-19-20, Shreedev Complex</p>
+                  <p className="text-gray-600 text-sm">opp. Post Office, Station Road</p>
+                  <p className="text-gray-600 text-sm">Patan (N.G.) - 384265, Gujarat, India</p>
                 </div>
               </div>
             </div>

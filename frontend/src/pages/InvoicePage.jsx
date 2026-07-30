@@ -129,6 +129,12 @@ const InvoicePage = () => {
                   <td className="py-2 text-sm text-gray-600">Subtotal</td>
                   <td className="py-2 text-sm text-gray-800 text-right font-medium">{formatPrice(order.itemsPrice)}</td>
                 </tr>
+                {order.couponDiscount > 0 && (
+                  <tr>
+                    <td className="py-2 text-sm text-green-600">Coupon Discount ({order.couponCode})</td>
+                    <td className="py-2 text-sm text-green-600 text-right font-semibold">-{formatPrice(order.couponDiscount)}</td>
+                  </tr>
+                )}
                 <tr>
                   <td className="py-2 text-sm text-gray-600">Shipping</td>
                   <td className="py-2 text-sm text-gray-800 text-right font-medium">{order.shippingPrice === 0 ? 'Free' : formatPrice(order.shippingPrice)}</td>

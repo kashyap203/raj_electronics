@@ -76,3 +76,10 @@ export const deliveryCityService = {
   add: (data) => api.post('/delivery-cities', data),
   delete: (id) => api.delete(`/delivery-cities/${id}`),
 };
+
+export const paymentService = {
+  createRazorpayOrder: (orderId) => api.post('/payment/create-order', { orderId }),
+  verifyPayment: (data) => api.post('/payment/verify-payment', data),
+  handleFailure: (data) => api.post('/payment/payment-failed', data),
+};
+

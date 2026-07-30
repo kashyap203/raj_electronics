@@ -1,10 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaMapMarkerAlt, FaMoneyBillWave, FaCreditCard } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaMoneyBillWave, FaCreditCard, FaLock, FaShieldAlt, FaMobileAlt, FaQrcode } from 'react-icons/fa';
 import { useCart, useAuth } from '../context/AppContext';
-import { orderService, deliveryCityService } from '../services';
+import { orderService, deliveryCityService, paymentService } from '../services';
 import { formatPrice, getDiscountedPrice, getImageUrl } from '../utils/helpers';
 import { Alert } from '../components/common';
+
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const CheckoutPage = () => {
   const { cart, fetchCart } = useCart();
@@ -60,20 +71,109 @@ const CheckoutPage = () => {
     if (items.length === 0) return setError('Your cart is empty');
     setLoading(true);
     setError('');
+
     try {
       const orderItems = items
         .filter(item => item.product && item.product._id)
         .map(item => ({ product: item.product._id, quantity: item.quantity }));
-<<<<<<< HEAD
-      const { data } = await orderService.create({ orderItems, address, paymentMethod, couponCode: appliedCoupon || undefined });
-=======
-      const { data } = await orderService.create({ orderItems, address, paymentMethod });
->>>>>>> da62f8b88578216be1d47208b97ee1322c5b5b5c
-      await fetchCart();
-      navigate(`/profile/orders/${data._id}`, { state: { success: true } });
+
+      const isOnline = paymentMethod !== 'Cash on Delivery';
+      const actualPaymentMethod = isOnline ? 'Online Payment (Razorpay)' : 'Cash on Delivery';
+
+      // 1. Create order record in backend
+      const { data: createdOrder } = await orderService.create({
+        orderItems,
+        address,
+        paymentMethod: actualPaymentMethod,
+        couponCode: appliedCoupon || undefined,
+      });
+
+      // 2. If Cash on Delivery, complete flow immediately
+      if (!isOnline) {
+        await fetchCart();
+        navigate(`/profile/orders/${createdOrder._id}`, { state: { success: true } });
+        return;
+      }
+
+      // 3. Online Payment Flow (Razorpay)
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setError('Failed to load Razorpay SDK. Please check your internet connection.');
+        setLoading(false);
+        return;
+      }
+
+      // Create Razorpay Order via Payment API
+      const { data: razorpayData } = await paymentService.createRazorpayOrder(createdOrder._id);
+
+      const options = {
+        key: razorpayData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TJpgLYHCfdOglV',
+        amount: razorpayData.amount,
+        currency: razorpayData.currency || 'INR',
+        name: 'Raj Electronics',
+        description: `Order #${createdOrder._id.slice(-8).toUpperCase()}`,
+        order_id: razorpayData.razorpayOrderId,
+        handler: async function (response) {
+          try {
+            // Verify HMAC SHA256 Signature on Backend
+            await paymentService.verifyPayment({
+              orderId: createdOrder._id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            await fetchCart();
+            navigate(`/profile/orders/${createdOrder._id}`, {
+              state: { success: true, paymentSuccess: true },
+            });
+          } catch (verifyErr) {
+            setError(verifyErr.response?.data?.message || 'Payment verification failed. Please contact support.');
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: address.fullName || user?.name || '',
+          email: user?.email || '',
+          contact: address.phone || user?.phone || '',
+        },
+        theme: {
+          color: '#E50914', // Raj Electronics Primary Red
+        },
+        modal: {
+          ondismiss: async function () {
+            try {
+              await paymentService.handleFailure({
+                orderId: createdOrder._id,
+                reason: 'User closed Razorpay checkout modal',
+              });
+            } catch (err) {
+              console.error(err);
+            }
+            setError('Payment was cancelled. You can retry payment anytime from My Orders.');
+            setLoading(false);
+          },
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+
+      razorpayInstance.on('payment.failed', async function (response) {
+        try {
+          await paymentService.handleFailure({
+            orderId: createdOrder._id,
+            reason: response.error?.description || 'Razorpay Payment Failed',
+          });
+        } catch (err) {
+          console.error(err);
+        }
+        setError(response.error?.description || 'Payment failed. Please try again or choose another payment method.');
+        setLoading(false);
+      });
+
+      razorpayInstance.open();
     } catch (err) {
-      setError(err.message);
-    } finally {
+      setError(err.response?.data?.message || err.message || 'Something went wrong');
       setLoading(false);
     }
   };
@@ -121,21 +221,68 @@ const CheckoutPage = () => {
 
             {/* Payment Method */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="font-bold text-gray-800 mb-4">Payment Method</h2>
+              <h2 className="font-bold text-gray-800 mb-4 flex items-center justify-between">
+                <span>Payment Method</span>
+                <span className="text-xs text-green-600 flex items-center gap-1 font-normal"><FaLock size={10} /> 256-bit SSL Encrypted</span>
+              </h2>
               <div className="space-y-3">
                 {[
-                  { value: 'Cash on Delivery', label: 'Cash on Delivery', icon: FaMoneyBillWave, desc: 'Pay when your order arrives' },
-                  { value: 'UPI', label: 'UPI Payment', icon: FaCreditCard, desc: 'Pay via UPI apps' },
-                  { value: 'Card', label: 'Credit / Debit Card', icon: FaCreditCard, desc: 'Visa, Mastercard, RuPay' },
+                  {
+                    value: 'UPI',
+                    label: 'UPI Instant Payment (GPay, PhonePe, Paytm, BHIM)',
+                    icon: FaMobileAlt,
+                    badge: 'Popular & Instant',
+                    desc: 'Pay instantly using Google Pay, PhonePe, Paytm, BHIM, UPI ID or QR Code',
+                  },
+                  {
+                    value: 'Razorpay',
+                    label: 'Credit / Debit Cards & Net Banking',
+                    icon: FaCreditCard,
+                    badge: '256-bit Secure',
+                    desc: 'Visa, Mastercard, RuPay, Net Banking (SBI, HDFC, ICICI, Axis) & Wallets',
+                  },
+                  {
+                    value: 'Cash on Delivery',
+                    label: 'Cash on Delivery',
+                    icon: FaMoneyBillWave,
+                    badge: null,
+                    desc: 'Pay cash when your order is delivered to your doorstep',
+                  },
                 ].map(opt => (
-                  <label key={opt.value} className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition ${paymentMethod === opt.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
-                    <input type="radio" name="payment" value={opt.value} checked={paymentMethod === opt.value} onChange={e => setPaymentMethod(e.target.value)} className="accent-primary" />
-                    <opt.icon className={paymentMethod === opt.value ? 'text-primary' : 'text-gray-400'} size={20} />
-                    <div>
-                      <p className="font-medium text-sm text-gray-800">{opt.label}</p>
-                      <p className="text-xs text-gray-500">{opt.desc}</p>
-                    </div>
-                  </label>
+                  <div key={opt.value} className={`rounded-xl border-2 transition overflow-hidden ${paymentMethod === opt.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <label className="flex items-start gap-4 p-4 cursor-pointer">
+                      <input type="radio" name="payment" value={opt.value} checked={paymentMethod === opt.value} onChange={e => setPaymentMethod(e.target.value)} className="accent-primary mt-1" />
+                      <opt.icon className={paymentMethod === opt.value ? 'text-primary' : 'text-gray-400'} size={22} />
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-sm text-gray-800">{opt.label}</p>
+                          {opt.badge && (
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${opt.value === 'UPI' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                              {opt.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                      </div>
+                    </label>
+
+                    {/* Extra UPI options when selected */}
+                    {opt.value === 'UPI' && paymentMethod === 'UPI' && (
+                      <div className="px-4 pb-4 border-t border-purple-100 pt-3 bg-purple-50/50">
+                        <p className="text-xs font-semibold text-purple-900 mb-2">Supported Apps & Methods:</p>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI', 'Scan QR Code'].map(app => (
+                            <span key={app} className="bg-white border border-purple-200 text-purple-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-2xs">
+                              ✓ {app}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-gray-500">
+                          Clicking <strong>Place Order</strong> will launch the secure UPI payment window for your selected app.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
