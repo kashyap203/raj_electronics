@@ -150,7 +150,14 @@ const CheckoutPage = () => {
                   <input
                     type="text"
                     value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCouponCode(val);
+                      if (appliedCoupon && val.trim().toUpperCase() !== appliedCoupon) {
+                        setAppliedCoupon('');
+                        setCouponDiscount(0);
+                      }
+                    }}
                     placeholder="Enter coupon code"
                     className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none uppercase"
                   />
