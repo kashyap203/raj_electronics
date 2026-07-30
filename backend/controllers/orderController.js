@@ -2,6 +2,7 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Cart from '../models/Cart.js';
 import DeliveryCity from '../models/DeliveryCity.js';
+import { sendOrderStatusNotification } from '../utils/notificationService.js';
 
 export const createOrder = async (req, res) => {
   const { orderItems, address, paymentMethod = 'Cash on Delivery', couponCode } = req.body;
@@ -71,6 +72,10 @@ export const createOrder = async (req, res) => {
 
   await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
 
+  // Trigger automated Order Confirmation notification (Email & SMS)
+  const populatedOrder = await Order.findById(order._id).populate('user', 'name email phone');
+  sendOrderStatusNotification(populatedOrder || order, 'Confirmed');
+
   res.status(201).json(order);
 };
 
@@ -123,6 +128,11 @@ export const cancelOrder = async (req, res) => {
 
   order.status = 'Cancelled';
   await order.save();
+
+  // Trigger Cancellation notification
+  const populatedOrder = await Order.findById(order._id).populate('user', 'name email phone');
+  sendOrderStatusNotification(populatedOrder || order, 'Cancelled');
+
   res.json(order);
 };
 
@@ -145,9 +155,11 @@ export const updateOrderStatus = async (req, res) => {
     return res.status(404).json({ message: 'Order not found' });
   }
 
-  order.status = req.body.status;
+  const previousStatus = order.status;
+  const newStatus = req.body.status;
+  order.status = newStatus;
 
-  if (req.body.status === 'Delivered') {
+  if (newStatus === 'Delivered') {
     order.isDelivered = true;
     order.deliveredAt = Date.now();
     order.isPaid = true;
@@ -155,6 +167,13 @@ export const updateOrderStatus = async (req, res) => {
   }
 
   await order.save();
+
+  // Trigger Status Update notification (e.g. Confirmed -> Shipped / Delivered / Packed)
+  if (previousStatus !== newStatus) {
+    const populatedOrder = await Order.findById(order._id).populate('user', 'name email phone');
+    sendOrderStatusNotification(populatedOrder || order, newStatus);
+  }
+
   res.json(order);
 };
 
