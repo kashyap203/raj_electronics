@@ -38,14 +38,14 @@ const HomePage = () => {
   }, []);
 
   const ProductSection = ({ title, products, link }) => (
-    <section className="mb-12 animate-slide-up">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-        <Link to={link} className="text-primary hover:underline font-medium text-sm">
+    <section className="mb-8 sm:mb-12 animate-slide-up">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{title}</h2>
+        <Link to={link} className="text-primary hover:underline font-medium text-xs sm:text-sm">
           View All &rarr;
         </Link>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {products.map((p) => (
           <ProductCard key={p._id} product={p} />
         ))}
@@ -60,39 +60,39 @@ const HomePage = () => {
       {/* Hero Slider with Active Offers and Trending Launches */}
       <HeroSlider />
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
         {/* Featured Categories */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <section className="mb-8 sm:mb-12">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Shop by Category</h2>
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
             {categories.map((cat) => (
               <Link
                 key={cat._id}
                 to={`/products?category=${cat._id}`}
-                className="bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+                className="bg-white rounded-xl p-3 sm:p-4 text-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
               >
-                <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-gray-50">
+                <div className="aspect-square rounded-lg overflow-hidden mb-2 sm:mb-3 bg-gray-50">
                   <img
                     src={getImageUrl(cat.image)}
                     alt={cat.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
-                <h3 className="font-semibold text-sm text-gray-800 group-hover:text-primary transition">{cat.name}</h3>
+                <h3 className="font-semibold text-xs sm:text-sm text-gray-800 group-hover:text-primary transition line-clamp-1">{cat.name}</h3>
               </Link>
             ))}
           </div>
         </section>
 
         {/* Special Offers Banner */}
-        <section className="mb-12 bg-dark rounded-2xl p-8 md:p-12 text-white shadow-xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+        <section className="mb-8 sm:mb-12 bg-dark rounded-2xl p-6 sm:p-8 md:p-12 text-white shadow-xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
             <div>
-              <p className="text-primary font-semibold mb-1 uppercase tracking-wide text-sm">Limited Time Offer</p>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-2">Up to 40% Off on ACs & TVs</h2>
-              <p className="text-gray-300">Free installation on selected models. Hurry, offer ends soon!</p>
+              <p className="text-primary font-semibold mb-1 uppercase tracking-wide text-xs sm:text-sm">Limited Time Offer</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Up to 40% Off on ACs & TVs</h2>
+              <p className="text-gray-300 text-xs sm:text-base">Free installation on selected models. Hurry, offer ends soon!</p>
             </div>
-            <Link to="/products?category=Air Conditioners" className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shrink-0">
+            <Link to="/products?category=Air Conditioners" className="bg-primary hover:bg-primary-dark text-white font-bold px-6 py-3 sm:px-8 sm:py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shrink-0 text-xs sm:text-sm">
               Grab the Deal
             </Link>
           </div>
@@ -103,19 +103,19 @@ const HomePage = () => {
         {featured.length > 0 && <ProductSection title="Featured Products" products={featured} link="/products?featured=true" />}
 
         {/* Why Choose Us */}
-        <section className="mb-12 bg-white rounded-2xl p-8 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Why Choose Raj Electronics?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="mb-8 sm:mb-12 bg-white rounded-2xl p-5 sm:p-8 shadow-sm">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 sm:mb-8 text-center">Why Choose Raj Electronics?</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               { icon: FaTruck, title: 'Free Delivery', desc: 'Free shipping on orders above ₹5,000' },
               { icon: FaShieldAlt, title: 'Genuine Products', desc: '100% authentic products with warranty' },
               { icon: FaHeadset, title: '24/7 Support', desc: 'Dedicated customer support team' },
               { icon: FaUndo, title: 'Easy Returns', desc: '7-day hassle-free return policy' },
             ].map((item) => (
-              <div key={item.title} className="text-center p-4">
-                <item.icon className="text-4xl text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-1">{item.title}</h3>
-                <p className="text-sm text-gray-500">{item.desc}</p>
+              <div key={item.title} className="text-center p-2 sm:p-4">
+                <item.icon className="text-2xl sm:text-4xl text-primary mx-auto mb-2 sm:mb-3" />
+                <h3 className="font-semibold text-xs sm:text-base mb-1">{item.title}</h3>
+                <p className="text-xs text-gray-500 line-clamp-2">{item.desc}</p>
               </div>
             ))}
           </div>
