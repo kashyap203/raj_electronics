@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { FaShoppingBag, FaMapMarkerAlt, FaCreditCard, FaCheckCircle } from 'react-icons/fa';
+import { FaShoppingBag, FaMapMarkerAlt, FaCreditCard, FaCheckCircle, FaFileInvoice } from 'react-icons/fa';
 import { orderService } from '../services';
 import { Loader, Alert, Breadcrumb } from '../components/common';
 import { formatPrice, getImageUrl } from '../utils/helpers';
@@ -75,11 +75,19 @@ const OrderDetailPage = () => {
           <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${statusColors[order.status]}`}>
+          <Link 
+            to={`/profile/orders/${order._id}/invoice`} 
+            target="_blank" 
+            className="flex items-center gap-2 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-full transition shadow-sm"
+          >
+            <FaFileInvoice className="text-gray-500" />
+            Download Invoice
+          </Link>
+          <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${statusColors[order.status]}`}>
             {order.status}
           </span>
           {['Pending', 'Processing'].includes(order.status) && (
-            <button onClick={handleCancel} disabled={cancelling} className="text-sm text-red-500 hover:text-red-700 border border-red-300 hover:border-red-500 px-3 py-1 rounded-full transition">
+            <button onClick={handleCancel} disabled={cancelling} className="text-sm text-red-500 hover:text-red-700 border border-red-300 hover:border-red-500 px-3 py-1.5 rounded-full transition">
               {cancelling ? 'Cancelling...' : 'Cancel Order'}
             </button>
           )}

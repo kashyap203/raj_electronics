@@ -16,6 +16,7 @@ import WishlistPage from './pages/WishlistPage';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import InvoicePage from './pages/InvoicePage';
 import CategoriesPage from './pages/CategoriesPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
@@ -57,6 +58,9 @@ function App() {
               <Route path="/profile/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
               <Route path="/profile/orders/:id" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
             </Route>
+
+            {/* Standalone Pages without Layout */}
+            <Route path="/profile/orders/:id/invoice" element={<ProtectedRoute><InvoicePage /></ProtectedRoute>} />
 
             {/* Admin Layout */}
             <Route path="/admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>
