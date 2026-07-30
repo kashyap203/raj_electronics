@@ -24,6 +24,8 @@ const orderSchema = new mongoose.Schema(
       phone: { type: String, required: true },
     },
     paymentMethod: { type: String, default: 'Cash on Delivery' },
+    couponCode: { type: String, default: null },
+    couponDiscount: { type: Number, default: 0 },
     status: {
       type: String,
       enum: ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled'],
