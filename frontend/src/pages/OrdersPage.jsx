@@ -35,7 +35,7 @@ const OrdersPage = () => {
           title="No orders yet"
           description="Once you place an order, it will appear here"
           action={
-            <Link to="/products" className="bg-primary text-dark font-bold px-8 py-3 rounded-full hover:bg-primary-dark transition inline-block">
+            <Link to="/products" className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:bg-primary-dark transition inline-block">
               Start Shopping
             </Link>
           }

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../context/AppContext';
 import { Alert } from '../components/common';
+import logoDark from '../assets/logo-dark.png';
 
 const LoginPage = () => {
   const { login, loading } = useAuth();
@@ -29,9 +30,8 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-dark via-dark-light to-dark flex items-center justify-center px-4 py-12">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="bg-primary text-dark font-bold text-xl px-3 py-1 rounded-lg">RE</div>
-            <span className="font-bold text-lg text-gray-800">Raj Electronics</span>
+          <Link to="/" className="inline-flex items-center justify-center mb-4">
+            <img src={logoDark} alt="Raj Electronics" className="h-20 md:h-24 lg:h-28 w-auto object-contain max-w-full" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
           <p className="text-gray-500 text-sm mt-1">Sign in to your account</p>
@@ -83,7 +83,7 @@ const LoginPage = () => {
             type="submit"
             disabled={loading}
             id="login-submit"
-            className="w-full bg-primary hover:bg-primary-dark disabled:opacity-60 text-dark font-bold py-3 rounded-xl transition text-base"
+            className="w-full bg-primary hover:bg-primary-dark disabled:opacity-60 text-white font-bold py-3 rounded-xl transition text-base"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

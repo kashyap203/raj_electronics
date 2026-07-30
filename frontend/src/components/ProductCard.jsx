@@ -89,7 +89,7 @@ const ProductCard = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0 || loading}
-            className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-dark font-semibold text-sm py-2 rounded-full transition flex items-center justify-center gap-1"
+            className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold text-sm py-2 rounded-full transition flex items-center justify-center gap-1"
           >
             <FaShoppingCart size={12} />
             {loading ? 'Adding...' : 'Add to Cart'}

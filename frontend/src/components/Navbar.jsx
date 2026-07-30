@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { FaHeart, FaShoppingCart, FaSearch, FaUser, FaBars, FaTimes } from 'react-icons/fa';
 import { useState } from 'react';
 import { useAuth, useCart } from '../context/AppContext';
+import logo from '../assets/logo.png';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -40,15 +41,14 @@ const Navbar = () => {
     <header className="sticky top-0 z-50">
       <div className="bg-dark/95 backdrop-blur-md text-white shadow-lg border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between gap-4 h-16">
+          <div className="flex items-center justify-between gap-4 h-20 md:h-24">
             {/* Logo */}
-            <NavLink to="/" className="flex items-center gap-2 shrink-0">
-              <div className="bg-primary text-dark font-bold text-xl px-3 py-1 rounded-lg">
-                RE
-              </div>
-              <span className="font-bold text-lg hidden sm:block tracking-tight">
-                Raj Electronics
-              </span>
+            <NavLink to="/" className="flex items-center shrink-0 py-1">
+              <img
+                src={logo}
+                alt="Raj Electronics"
+                className="h-16 sm:h-18 md:h-20 lg:h-22 w-auto max-h-20 md:max-h-22 object-contain transition-all hover:scale-105"
+              />
             </NavLink>
 
             {/* Centered nav links - desktop only */}
@@ -77,7 +77,7 @@ const Navbar = () => {
                     />
                     <button
                       type="submit"
-                      className="bg-primary hover:bg-primary-dark text-dark px-3 py-1.5 rounded-r-full transition"
+                      className="bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-r-full transition"
                     >
                       <FaSearch size={14} />
                     </button>
@@ -96,7 +96,7 @@ const Navbar = () => {
               <NavLink to="/wishlist" className="relative hover:text-primary transition">
                 <FaHeart size={20} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-dark text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
@@ -105,7 +105,7 @@ const Navbar = () => {
               <NavLink to="/cart" className="relative hover:text-primary transition">
                 <FaShoppingCart size={20} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-dark text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
@@ -146,7 +146,7 @@ const Navbar = () => {
               ) : (
                 <NavLink
                   to="/login"
-                  className="bg-primary hover:bg-primary-dark text-dark font-semibold px-4 py-1.5 rounded-full transition text-sm"
+                  className="bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-1.5 rounded-full transition text-sm"
                 >
                   Login
                 </NavLink>
@@ -183,7 +183,7 @@ const Navbar = () => {
                 placeholder="Search..."
                 className="flex-1 px-3 py-2 rounded-full text-gray-800 text-sm outline-none"
               />
-              <button type="submit" className="bg-primary text-dark px-4 py-2 rounded-full">
+              <button type="submit" className="bg-primary text-white px-4 py-2 rounded-full">
                 <FaSearch size={14} />
               </button>
             </form>

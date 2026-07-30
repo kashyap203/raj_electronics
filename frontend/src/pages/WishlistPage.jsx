@@ -16,7 +16,7 @@ const WishlistPage = () => {
           title="Your wishlist is empty"
           description="Save products you love and come back later"
           action={
-            <Link to="/products" className="bg-primary text-dark font-bold px-8 py-3 rounded-full hover:bg-primary-dark transition inline-block">
+            <Link to="/products" className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:bg-primary-dark transition inline-block">
               Explore Products
             </Link>
           }
@@ -52,7 +52,7 @@ const WishlistPage = () => {
                   <button
                     onClick={() => addToCart(p._id)}
                     disabled={p.stock === 0}
-                    className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-dark font-semibold text-sm py-2 rounded-xl transition"
+                    className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold text-sm py-2 rounded-xl transition"
                   >
                     {p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>

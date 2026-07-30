@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram, FaYoutube, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import logo from '../assets/logo.png';
 
 const Footer = () => {
   return (
@@ -7,16 +8,27 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <div className="bg-primary text-dark font-bold text-xl px-3 py-1 rounded-lg">RE</div>
-            <span className="font-bold text-lg">Raj Electronics</span>
+            <img src={logo} alt="Raj Electronics" className="h-16 md:h-20 lg:h-24 w-auto object-contain" />
           </div>
           <p className="text-gray-400 text-sm leading-relaxed">
             Your trusted destination for premium electronics. Quality products, competitive prices, and excellent service since 2010.
           </p>
           <div className="flex gap-4 mt-4">
-            {[FaFacebook, FaTwitter, FaInstagram, FaYoutube].map((Icon, i) => (
-              <a key={i} href="#" className="text-gray-400 hover:text-primary transition text-xl">
-                <Icon />
+            {[
+              { icon: FaFacebook, href: '#', label: 'Facebook' },
+              { icon: FaTwitter, href: '#', label: 'Twitter' },
+              { icon: FaInstagram, href: 'https://www.instagram.com/rajelectronicsofficial?igsh=MTN2ZXI5OGZzc2s3Yw==', label: 'Instagram' },
+              { icon: FaYoutube, href: '#', label: 'YouTube' },
+            ].map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target={social.href !== '#' ? '_blank' : undefined}
+                rel={social.href !== '#' ? 'noopener noreferrer' : undefined}
+                aria-label={social.label}
+                className="text-gray-400 hover:text-primary transition text-xl"
+              >
+                <social.icon />
               </a>
             ))}
           </div>
