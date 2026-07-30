@@ -18,14 +18,14 @@ const categories = [
 ];
 
 const brands = [
-  { name: 'Samsung', logo: '' },
-  { name: 'LG', logo: '' },
-  { name: 'Sony', logo: '' },
-  { name: 'Whirlpool', logo: '' },
-  { name: 'Panasonic', logo: '' },
-  { name: 'Voltas', logo: '' },
-  { name: 'Haier', logo: '' },
-  { name: 'Preethi', logo: '' },
+  { name: 'Samsung', logo: '/uploads/brand-samsung.svg' },
+  { name: 'LG', logo: '/uploads/brand-lg.svg' },
+  { name: 'Sony', logo: '/uploads/brand-sony.svg' },
+  { name: 'Whirlpool', logo: '/uploads/brand-whirlpool.svg' },
+  { name: 'Panasonic', logo: '/uploads/brand-panasonic.svg' },
+  { name: 'Voltas', logo: '/uploads/brand-voltas.svg' },
+  { name: 'Haier', logo: '/uploads/brand-haier.svg' },
+  { name: 'Preethi', logo: '/uploads/brand-preethi.svg' },
 ];
 
 const productTemplates = [

@@ -23,6 +23,10 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+
   const items = cart.items || [];
   const subtotal = items.reduce((acc, item) => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
@@ -38,7 +42,18 @@ const CheckoutPage = () => {
     c => c.cityName.toLowerCase() === address.city.trim().toLowerCase()
   );
   const shipping = address.city ? (isFreeDelivery ? 0 : 99) : 99;
-  const total = subtotal + shipping;
+  const total = subtotal - couponDiscount + shipping;
+
+  const applyCoupon = () => {
+    if (couponCode.trim().toUpperCase() === 'DISCOUNT10') {
+      setAppliedCoupon('DISCOUNT10');
+      setCouponDiscount(Math.round(subtotal * 0.1));
+    } else {
+      alert('Invalid Coupon Code');
+      setAppliedCoupon('');
+      setCouponDiscount(0);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -125,6 +140,26 @@ const CheckoutPage = () => {
           {/* Right: Order Summary */}
           <div>
             <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
+              <div className="mb-6">
+                <h3 className="font-bold text-gray-800 mb-2">Have a Coupon?</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    placeholder="Enter coupon code"
+                    className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none uppercase"
+                  />
+                  <button type="button" onClick={applyCoupon} className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                    Apply
+                  </button>
+                </div>
+                {appliedCoupon && (
+                  <p className="text-green-600 text-xs mt-2 font-medium">
+                    Coupon '{appliedCoupon}' applied successfully!
+                  </p>
+                )}
+              </div>
               <h2 className="font-bold text-gray-800 mb-4">Order Summary</h2>
               <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                 {items.map(item => {
@@ -148,6 +183,12 @@ const CheckoutPage = () => {
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span><span>{formatPrice(subtotal)}</span>
                 </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Discount ({appliedCoupon})</span>
+                    <span>-{formatPrice(couponDiscount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
                   <span className={shipping === 0 ? 'text-green-600' : ''}>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
