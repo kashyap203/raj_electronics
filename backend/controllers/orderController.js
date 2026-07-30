@@ -4,7 +4,7 @@ import Cart from '../models/Cart.js';
 import DeliveryCity from '../models/DeliveryCity.js';
 
 export const createOrder = async (req, res) => {
-  const { orderItems, address, paymentMethod = 'Cash on Delivery' } = req.body;
+  const { orderItems, address, paymentMethod = 'Cash on Delivery', couponCode } = req.body;
 
   if (!orderItems?.length) {
     return res.status(400).json({ message: 'No order items' });
@@ -50,13 +50,20 @@ export const createOrder = async (req, res) => {
     }
   }
 
-  const total = itemsPrice + shippingPrice;
+  let couponDiscount = 0;
+  if (couponCode === 'DISCOUNT10') {
+    couponDiscount = Math.round(itemsPrice * 0.1);
+  }
+
+  const total = itemsPrice - couponDiscount + shippingPrice;
 
   const order = await Order.create({
     user: req.user._id,
     products,
     itemsPrice,
     shippingPrice,
+    couponCode: couponCode === 'DISCOUNT10' ? couponCode : null,
+    couponDiscount,
     total,
     address,
     paymentMethod,
