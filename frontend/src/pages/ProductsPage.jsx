@@ -38,10 +38,10 @@ const ProductsPage = () => {
     try {
       const params = { page: currentPage, limit: 12, ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)) };
       const { data } = await productService.getAll(params);
-      setProducts(data.products);
-      setPage(data.page);
-      setPages(data.pages);
-      setTotal(data.total);
+      setProducts(data?.products || []);
+      setPage(data?.page || 1);
+      setPages(data?.pages || 1);
+      setTotal(data?.total || 0);
     } catch {
       setProducts([]);
     } finally {

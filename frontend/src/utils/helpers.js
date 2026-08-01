@@ -1,9 +1,11 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api';
+const BACKEND_BASE = API_URL.startsWith('http') ? API_URL.replace(/\/api\/?$/, '') : '';
 
 export const getImageUrl = (path) => {
   if (!path) return 'https://via.placeholder.com/300x300?text=No+Image';
-  if (path.startsWith('http')) return path;
-  return path.startsWith('/') ? path : `/${path}`;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return BACKEND_BASE ? `${BACKEND_BASE}${cleanPath}` : cleanPath;
 };
 
 export const formatPrice = (price) => {
@@ -11,11 +13,11 @@ export const formatPrice = (price) => {
     style: 'currency',
     currency: 'INR',
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(price || 0);
 };
 
 export const getDiscountedPrice = (price, discount = 0) => {
-  return Math.round(price - (price * discount) / 100);
+  return Math.round((price || 0) - ((price || 0) * (discount || 0)) / 100);
 };
 
 export const calculateDiscount = (price, discount) => {
@@ -23,3 +25,4 @@ export const calculateDiscount = (price, discount) => {
 };
 
 export default API_URL;
+
