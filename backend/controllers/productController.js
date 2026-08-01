@@ -66,6 +66,7 @@ export const getProducts = async (req, res) => {
   const products = await Product.find(filter)
     .populate('brand', 'name logo')
     .populate('category', 'name image')
+    .populate('offers')
     .sort(sortOption)
     .limit(limit)
     .skip((page - 1) * limit);
@@ -82,6 +83,7 @@ export const getProductById = async (req, res) => {
   const product = await Product.findById(req.params.id)
     .populate('brand', 'name logo')
     .populate('category', 'name image')
+    .populate('offers')
     .populate('reviews.user', 'name');
 
   if (!product) {
@@ -95,6 +97,7 @@ export const getProductBySlug = async (req, res) => {
   const product = await Product.findOne({ slug: req.params.slug })
     .populate('brand', 'name logo')
     .populate('category', 'name image')
+    .populate('offers')
     .populate('reviews.user', 'name');
 
   if (!product) {
@@ -122,6 +125,12 @@ export const createProduct = async (req, res) => {
       : req.body.features
     : [];
 
+  const offers = req.body.offers
+    ? typeof req.body.offers === 'string'
+      ? JSON.parse(req.body.offers)
+      : req.body.offers
+    : [];
+
   const product = await Product.create({
     name: req.body.name,
     slug: slugify(req.body.name),
@@ -134,13 +143,15 @@ export const createProduct = async (req, res) => {
     specifications,
     features,
     images,
+    offers,
     featured: req.body.featured === 'true' || req.body.featured === true,
     bestSelling: req.body.bestSelling === 'true' || req.body.bestSelling === true,
   });
 
   const populated = await Product.findById(product._id)
     .populate('brand', 'name logo')
-    .populate('category', 'name image');
+    .populate('category', 'name image')
+    .populate('offers');
 
   res.status(201).json(populated);
 };
@@ -185,6 +196,13 @@ export const updateProduct = async (req, res) => {
         : req.body.features;
   }
 
+  if (req.body.offers) {
+    product.offers =
+      typeof req.body.offers === 'string'
+        ? JSON.parse(req.body.offers)
+        : req.body.offers;
+  }
+
   if (req.body.featured !== undefined) {
     product.featured = req.body.featured === 'true' || req.body.featured === true;
   }
@@ -197,7 +215,8 @@ export const updateProduct = async (req, res) => {
   const updated = await product.save();
   const populated = await Product.findById(updated._id)
     .populate('brand', 'name logo')
-    .populate('category', 'name image');
+    .populate('category', 'name image')
+    .populate('offers');
 
   res.json(populated);
 };

@@ -97,3 +97,21 @@ export const Pagination = ({ page, pages, onPageChange }) => {
     </div>
   );
 };
+
+export const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Confirm', type = 'danger' }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
+        <div className="p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
+          <p className="text-gray-600 text-sm mb-6">{message}</p>
+          <div className="flex gap-3">
+            <button onClick={onCancel} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">Cancel</button>
+            <button onClick={onConfirm} className={`flex-1 px-4 py-2 rounded-lg text-white font-medium transition ${type === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-primary hover:bg-primary-dark'}`}>{confirmText}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

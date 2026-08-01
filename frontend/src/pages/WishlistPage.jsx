@@ -33,8 +33,16 @@ const WishlistPage = () => {
           const price = getDiscountedPrice(p.price, p.discount);
           return (
             <div key={p._id} className="bg-white rounded-2xl shadow-sm overflow-hidden group animate-fade-in">
-              <Link to={`/products/${p._id}`} className="block relative aspect-square bg-gray-50">
-                <img src={getImageUrl(p.images?.[0])} alt={p.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300" />
+              <Link to={`/products/${p._id}`} aria-label={`View ${p.name}`} className="block relative aspect-square bg-gray-50">
+                <img
+                  src={getImageUrl(p.images?.[0])}
+                  alt={p.name}
+                  width="300"
+                  height="300"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                />
                 {p.discount > 0 && (
                   <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">-{p.discount}%</span>
                 )}
@@ -46,19 +54,21 @@ const WishlistPage = () => {
                 </Link>
                 <div className="flex items-baseline gap-2 mb-3">
                   <span className="font-bold text-gray-900">{formatPrice(price)}</span>
-                  {p.discount > 0 && <span className="text-xs text-gray-400 line-through">{formatPrice(p.price)}</span>}
+                  {p.discount > 0 && <span className="text-xs text-gray-500 line-through">{formatPrice(p.price)}</span>}
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => addToCart(p._id)}
                     disabled={p.stock === 0}
+                    aria-label={`Add ${p.name} to Cart`}
                     className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold text-sm py-2 rounded-xl transition"
                   >
                     {p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>
                   <button
                     onClick={() => removeFromWishlist(p._id)}
-                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
+                    aria-label={`Remove ${p.name} from wishlist`}
+                    className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
                   >
                     <FaTrash size={14} />
                   </button>

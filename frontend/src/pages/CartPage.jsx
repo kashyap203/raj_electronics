@@ -9,11 +9,23 @@ const CartPage = () => {
   const navigate = useNavigate();
 
   const items = cart.items || [];
+  const appliedOffer = cart.appliedOffer;
 
   const subtotal = items.reduce((acc, item) => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
     return acc + price * item.quantity;
   }, 0);
+
+  let offerDiscount = 0;
+  if (appliedOffer) {
+    if (appliedOffer.discountType === 'amount') {
+      offerDiscount = appliedOffer.discountValue;
+    } else {
+      offerDiscount = (subtotal * appliedOffer.discountValue) / 100;
+    }
+  }
+
+  const finalTotal = Math.max(0, subtotal - offerDiscount);
   const shippingText = "Calculated at checkout";
   const totalText = "Calculated at checkout";
 
@@ -102,9 +114,15 @@ const CartPage = () => {
                 <span>Shipping</span>
                 <span className="text-xs text-gray-500 mt-1">{shippingText}</span>
               </div>
+              {offerDiscount > 0 && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>Bank Offer Applied</span>
+                  <span>- {formatPrice(offerDiscount)}</span>
+                </div>
+              )}
               <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-base text-gray-800">
                 <span>Total</span>
-                <span className="text-sm text-gray-500 font-normal">{totalText}</span>
+                <span>{formatPrice(finalTotal)}</span>
               </div>
             </div>
             <button

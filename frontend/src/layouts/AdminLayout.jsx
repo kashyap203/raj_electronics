@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { FaTachometerAlt, FaBox, FaTags, FaShoppingBag, FaUsers, FaStar, FaSignOutAlt, FaTruck } from 'react-icons/fa';
+import { FaTachometerAlt, FaBox, FaTags, FaShoppingBag, FaUsers, FaStar, FaSignOutAlt, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
 import { useAuth } from '../context/AppContext';
 import logo from '../assets/logo.png';
 
@@ -15,6 +15,7 @@ const AdminLayout = () => {
     { to: '/admin/orders', icon: FaShoppingBag, label: 'Orders' },
     { to: '/admin/users', icon: FaUsers, label: 'Users' },
     { to: '/admin/delivery-cities', icon: FaTruck, label: 'Free Delivery' },
+    { to: '/admin/offers', icon: FaMoneyBillWave, label: 'Bank Offers' },
   ];
 
   const isActive = (link) =>

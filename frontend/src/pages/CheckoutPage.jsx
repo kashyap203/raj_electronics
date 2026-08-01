@@ -39,10 +39,20 @@ const CheckoutPage = () => {
   const [couponDiscount, setCouponDiscount] = useState(0);
 
   const items = cart.items || [];
+  const appliedOffer = cart.appliedOffer;
   const subtotal = items.reduce((acc, item) => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
     return acc + price * item.quantity;
   }, 0);
+
+  let offerDiscount = 0;
+  if (appliedOffer) {
+    if (appliedOffer.discountType === 'amount') {
+      offerDiscount = appliedOffer.discountValue;
+    } else {
+      offerDiscount = (subtotal * appliedOffer.discountValue) / 100;
+    }
+  }
   const [deliveryCities, setDeliveryCities] = useState([]);
   
   useEffect(() => {
@@ -53,7 +63,7 @@ const CheckoutPage = () => {
     c => c.cityName.toLowerCase() === address.city.trim().toLowerCase()
   );
   const shipping = address.city ? (isFreeDelivery ? 0 : 99) : 99;
-  const total = subtotal - couponDiscount + shipping;
+  const total = Math.max(0, subtotal - couponDiscount - offerDiscount) + shipping;
 
   const applyCoupon = () => {
     if (couponCode.trim().toUpperCase() === 'DISCOUNT10') {
@@ -228,36 +238,22 @@ const CheckoutPage = () => {
               <div className="space-y-3">
                 {[
                   {
-                    value: 'UPI',
-                    label: 'UPI Instant Payment (GPay, PhonePe, Paytm, BHIM)',
-                    icon: FaMobileAlt,
-                    badge: 'Popular & Instant',
-                    desc: 'Pay instantly using Google Pay, PhonePe, Paytm, BHIM, UPI ID or QR Code',
-                  },
-                  {
-                    value: 'Razorpay',
-                    label: 'Credit / Debit Cards & Net Banking',
-                    icon: FaCreditCard,
-                    badge: '256-bit Secure',
-                    desc: 'Visa, Mastercard, RuPay, Net Banking (SBI, HDFC, ICICI, Axis) & Wallets',
-                  },
-                  {
                     value: 'Cash on Delivery',
                     label: 'Cash on Delivery',
                     icon: FaMoneyBillWave,
-                    badge: null,
+                    badge: 'Zero Risk',
                     desc: 'Pay cash when your order is delivered to your doorstep',
                   },
                 ].map(opt => (
-                  <div key={opt.value} className={`rounded-xl border-2 transition overflow-hidden ${paymentMethod === opt.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <div key={opt.value} className="rounded-xl border-2 border-primary bg-primary/5 transition overflow-hidden">
                     <label className="flex items-start gap-4 p-4 cursor-pointer">
-                      <input type="radio" name="payment" value={opt.value} checked={paymentMethod === opt.value} onChange={e => setPaymentMethod(e.target.value)} className="accent-primary mt-1" />
-                      <opt.icon className={paymentMethod === opt.value ? 'text-primary' : 'text-gray-400'} size={22} />
+                      <input type="radio" name="payment" value={opt.value} checked={true} readOnly className="accent-primary mt-1" />
+                      <opt.icon className="text-primary" size={22} />
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-semibold text-sm text-gray-800">{opt.label}</p>
                           {opt.badge && (
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${opt.value === 'UPI' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-green-100 text-green-700">
                               {opt.badge}
                             </span>
                           )}
@@ -265,23 +261,6 @@ const CheckoutPage = () => {
                         <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
                       </div>
                     </label>
-
-                    {/* Extra UPI options when selected */}
-                    {opt.value === 'UPI' && paymentMethod === 'UPI' && (
-                      <div className="px-4 pb-4 border-t border-purple-100 pt-3 bg-purple-50/50">
-                        <p className="text-xs font-semibold text-purple-900 mb-2">Supported Apps & Methods:</p>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI', 'Scan QR Code'].map(app => (
-                            <span key={app} className="bg-white border border-purple-200 text-purple-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-2xs">
-                              ✓ {app}
-                            </span>
-                          ))}
-                        </div>
-                        <p className="text-[11px] text-gray-500">
-                          Clicking <strong>Place Order</strong> will launch the secure UPI payment window for your selected app.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -345,6 +324,12 @@ const CheckoutPage = () => {
                   <div className="flex justify-between text-green-600 font-medium">
                     <span>Discount ({appliedCoupon})</span>
                     <span>-{formatPrice(couponDiscount)}</span>
+                  </div>
+                )}
+                {offerDiscount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Bank Offer Applied</span>
+                    <span>-{formatPrice(offerDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-gray-600">

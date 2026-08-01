@@ -8,6 +8,7 @@ import {
   updateCartItem,
   removeFromCart,
   clearCart,
+  applyOffer,
 } from '../controllers/cartController.js';
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.post(
   validate,
   addToCart
 );
+router.put('/offer', applyOffer);
 router.put(
   '/:productId',
   [body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1')],
