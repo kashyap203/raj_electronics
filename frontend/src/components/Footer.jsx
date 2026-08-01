@@ -35,8 +35,8 @@ const Footer = () => {
         </div>
 
         <div>
-          <h4 className="font-semibold text-primary mb-4">Quick Links</h4>
-          <ul className="space-y-2 text-sm text-gray-400">
+          <h2 className="font-semibold text-primary mb-4">Quick Links</h2>
+          <ul className="space-y-2 text-sm text-gray-300">
             {['Home', 'Products', 'Categories', 'About Us', 'Contact'].map((item) => (
               <li key={item}>
                 <Link to={`/${item === 'Home' ? '' : item.toLowerCase().replace(' ', '-')}`} className="hover:text-primary transition">
@@ -48,8 +48,8 @@ const Footer = () => {
         </div>
 
         <div>
-          <h4 className="font-semibold text-primary mb-4">Categories</h4>
-          <ul className="space-y-2 text-sm text-gray-400">
+          <h2 className="font-semibold text-primary mb-4">Categories</h2>
+          <ul className="space-y-2 text-sm text-gray-300">
             {['Televisions', 'Refrigerators', 'Washing Machines', 'Air Conditioners', 'Flour Grinder'].map((cat) => (
               <li key={cat}>
                 <Link to={`/products?category=${encodeURIComponent(cat)}`} className="hover:text-primary transition">
@@ -61,8 +61,8 @@ const Footer = () => {
         </div>
 
         <div>
-          <h4 className="font-semibold text-primary mb-4">Contact Us</h4>
-          <ul className="space-y-3 text-sm text-gray-400">
+          <h2 className="font-semibold text-primary mb-4">Contact Us</h2>
+          <ul className="space-y-3 text-sm text-gray-300">
             <li className="flex items-start gap-2">
               <FaMapMarkerAlt className="text-primary mt-1 shrink-0" />
               <span>55-19-20, Shreedev Complex, opp. Post Office, Station Road, Patan.(N.G.) 384265</span>
@@ -77,7 +77,7 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500 gap-2">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-300 gap-2">
           <p>&copy; {new Date().getFullYear()} Raj Electronics. All rights reserved.</p>
           <div className="flex gap-4">
             <a href="#" className="hover:text-primary">Privacy Policy</a>
