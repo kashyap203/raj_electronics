@@ -42,22 +42,25 @@ const ProductCard = ({ product }) => {
       to={`/products/${product._id}`}
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group animate-fade-in flex flex-col"
     >
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+      <div className="relative h-36 sm:h-40 overflow-hidden bg-gray-50 flex items-center justify-center">
         <img
           src={getImageUrl(product.images?.[0])}
           alt={product.name}
-          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-contain p-2 sm:p-3 group-hover:scale-105 transition-transform duration-300 text-transparent"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://placehold.co/400x400/f9fafb/cbd5e1?text=No+Image';
+          }}
         />
         {product.discount > 0 && (
-          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <span className="absolute bottom-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10 shadow-sm">
             -{product.discount}%
           </span>
         )}
         <button
           onClick={handleWishlist}
-          className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition ${
-            inWishlist ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:text-red-500'
-          }`}
+          className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition z-10 ${inWishlist ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:text-red-500'
+            }`}
         >
           <FaHeart size={14} />
         </button>
