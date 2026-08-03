@@ -340,13 +340,19 @@ const Navbar = () => {
             )}
 
             {!search.trim() && (
-              <div className="mt-8 text-center text-black text-sm bg-red-400 bg-opacity-50 rounded-lg p-4" >
-                <p>
-                  Popular searches:
-                  <span className="text-white font-medium mx-1 cursor-pointer hover:underline" onClick={() => { setSearch('Smart TV'); handleSearch({ preventDefault: () => true }); }}>Smart TV</span>,
-                  <span className="text-white font-medium mx-1 cursor-pointer hover:underline" onClick={() => { setSearch('Air Conditioner'); handleSearch({ preventDefault: () => true }); }}>Air Conditioner</span>,
-                  <span className="text-white font-medium mx-1 cursor-pointer hover:underline" onClick={() => { setSearch('Refrigerator'); handleSearch({ preventDefault: () => true }); }}>Refrigerator</span>
-                </p>
+              <div className="mt-10 flex flex-col items-center">
+                <p className="text-gray-400 text-sm mb-3 font-medium uppercase tracking-wider">Popular Searches</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {['Smart TV', 'Air Conditioner', 'Refrigerator'].map(term => (
+                    <button
+                      key={term}
+                      onClick={(e) => { e.preventDefault(); setSearch(term); handleSearch(e); }}
+                      className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-primary text-white border border-white/10 hover:border-primary transition-all duration-300 text-sm font-medium backdrop-blur-md cursor-pointer shadow-sm hover:shadow-primary/20"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
