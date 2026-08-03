@@ -17,8 +17,11 @@ const InvoicePage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const hasPrinted = React.useRef(false);
+
   useEffect(() => {
-    if (!loading && order) {
+    if (!loading && order && !hasPrinted.current) {
+      hasPrinted.current = true;
       // Trigger print dialog automatically after a short delay to allow images to load
       setTimeout(() => {
         window.print();
