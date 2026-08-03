@@ -192,9 +192,9 @@ const HomePage = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Enter your email address"
               required
-              className="flex-1 px-4 py-3 rounded-full text-gray-800 outline-none"
+              className="flex-1 px-5 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-primary shadow-sm"
             />
             <button type="submit" className="bg-primary hover:bg-primary-dark text-dark font-bold px-6 py-3 rounded-full transition">
               Subscribe
