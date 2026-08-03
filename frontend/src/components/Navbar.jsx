@@ -175,15 +175,15 @@ const Navbar = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSearch} className="flex items-center">
+            <form onSubmit={handleSearch} className="flex items-stretch">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="flex-1 px-4 py-2 rounded-l-full bg-white text-gray-800 text-sm outline-none"
+                className="flex-1 px-4 py-2 rounded-l-full bg-white text-gray-800 text-sm outline-none border-none"
               />
-              <button type="submit" className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-r-full transition">
+              <button type="submit" className="bg-primary hover:bg-primary-dark text-white px-4 flex items-center justify-center rounded-r-full transition">
                 <FaSearch size={14} />
               </button>
             </form>
