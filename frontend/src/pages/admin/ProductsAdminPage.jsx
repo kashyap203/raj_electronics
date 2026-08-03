@@ -273,7 +273,7 @@ const ProductsAdminPage = () => {
                     className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none" />
                 </div>
 
-                <div className="sm:col-span-2">
+                {/* <div className="sm:col-span-2">
                   <label className="block text-sm font-medium mb-2">Available Bank Offers</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 max-h-40 overflow-y-auto">
                     {allOffers.length > 0 ? allOffers.map(offer => (
@@ -296,7 +296,7 @@ const ProductsAdminPage = () => {
                       <p className="text-xs text-gray-500">No active offers available</p>
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Images */}
