@@ -89,14 +89,14 @@ const ProductCard = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0 || loading}
-            className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold text-sm py-2 rounded-full transition flex items-center justify-center gap-1"
+            className="flex-1 min-w-0 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold text-sm py-2 px-2 rounded-full transition flex items-center justify-center gap-1 whitespace-nowrap"
           >
-            <FaShoppingCart size={12} />
-            {loading ? 'Adding...' : 'Add to Cart'}
+            <FaShoppingCart size={12} className="shrink-0" />
+            <span className="truncate">{loading ? 'Adding...' : 'Add to Cart'}</span>
           </button>
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/products/${product._id}`); }}
-            className="p-2 border border-gray-300 rounded-full hover:border-primary hover:text-primary transition"
+            className="p-2 shrink-0 border border-gray-300 rounded-full hover:border-primary hover:text-primary transition flex items-center justify-center"
           >
             <FaEye size={14} />
           </button>
