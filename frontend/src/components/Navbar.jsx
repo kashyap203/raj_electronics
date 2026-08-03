@@ -73,7 +73,7 @@ const Navbar = () => {
                       onChange={(e) => setSearch(e.target.value)}
                       onBlur={() => !search && setSearchOpen(false)}
                       placeholder="Search products, brands..."
-                      className="w-56 px-3 py-1.5 rounded-l-full text-gray-800 text-sm outline-none"
+                      className="w-56 px-3 py-1.5 rounded-l-full bg-white text-gray-800 text-sm outline-none"
                     />
                     <button
                       type="submit"
@@ -175,15 +175,15 @@ const Navbar = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSearch} className="flex gap-2">
+            <form onSubmit={handleSearch} className="flex items-center">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="flex-1 px-3 py-2 rounded-full text-gray-800 text-sm outline-none"
+                className="flex-1 px-4 py-2 rounded-l-full bg-white text-gray-800 text-sm outline-none"
               />
-              <button type="submit" className="bg-primary text-white px-4 py-2 rounded-full">
+              <button type="submit" className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-r-full transition">
                 <FaSearch size={14} />
               </button>
             </form>
