@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import crypto from 'crypto';
+import sendEmail from '../utils/sendEmail.js';
 
 export const register = async (req, res) => {
   const { name, email, password, phone } = req.body;
@@ -84,15 +85,35 @@ export const forgotPassword = async (req, res) => {
     return res.status(404).json({ message: 'No user found with that email' });
   }
 
-  const resetToken = crypto.randomBytes(20).toString('hex');
+  // Generate 6-digit OTP
+  const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+  
   user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
   await user.save();
 
-  res.json({
-    message: 'Password reset token generated',
-    resetToken,
-  });
+  try {
+    const message = `Your password reset OTP is: ${resetToken}\n\nThis OTP is valid for 10 minutes.\nIf you have not requested this email, then please ignore it.`;
+
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset OTP',
+      message,
+    });
+
+    res.json({
+      message: 'OTP sent to your email',
+      // resetToken, // Removed from response for security
+    });
+  } catch (error) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+    
+    // Fallback: If email fails, you can console log it for local dev without SMTP
+    console.error('Email sending failed:', error);
+    res.status(500).json({ message: 'Email could not be sent. Check backend logs or SMTP config.' });
+  }
 };
 
 export const resetPassword = async (req, res) => {
@@ -102,12 +123,13 @@ export const resetPassword = async (req, res) => {
     .digest('hex');
 
   const user = await User.findOne({
+    email: req.body.email,
     resetPasswordToken,
     resetPasswordExpire: { $gt: Date.now() },
   });
 
   if (!user) {
-    return res.status(400).json({ message: 'Invalid or expired reset token' });
+    return res.status(400).json({ message: 'Invalid or expired OTP, or wrong email' });
   }
 
   user.password = req.body.password;

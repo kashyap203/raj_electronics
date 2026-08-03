@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { FaLock, FaEye, FaEyeSlash, FaEnvelope, FaKey } from 'react-icons/fa';
 import { authService } from '../services';
 import { Alert } from '../components/common';
 import logoDark from '../assets/logo-dark.png';
 
 const ResetPasswordPage = () => {
-  const { token } = useParams();
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || '');
+  const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +22,11 @@ const ResetPasswordPage = () => {
     setError('');
     setSuccess('');
 
+    if (!email || !otp) {
+      setError('Email and OTP are required');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -32,7 +39,7 @@ const ResetPasswordPage = () => {
 
     setLoading(true);
     try {
-      const { data } = await authService.resetPassword({ token, password });
+      const { data } = await authService.resetPassword({ email, token: otp, password });
       setSuccess(data.message || 'Password has been reset successfully.');
       setTimeout(() => {
         navigate('/login');
@@ -59,6 +66,37 @@ const ResetPasswordPage = () => {
         <Alert message={success} type="success" onClose={() => setSuccess('')} />
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <div className="relative">
+              <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@example.com"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-gray-50"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">6-Digit OTP</label>
+            <div className="relative">
+              <FaKey className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                placeholder="123456"
+                maxLength="6"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition tracking-widest font-mono"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
             <div className="relative">

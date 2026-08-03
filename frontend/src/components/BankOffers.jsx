@@ -36,9 +36,8 @@ const BankOffers = ({ price, onApplyOffer, appliedOffer, offers }) => {
                 </div>
                 <button
                   onClick={() => onApplyOffer(appliedOffer?._id === offer._id ? null : offer)}
-                  className={`font-bold text-xs uppercase hover:underline cursor-pointer ${
-                    appliedOffer?._id === offer._id ? 'text-green-600' : 'text-[#2874f0]'
-                  }`}
+                  className={`font-bold text-xs uppercase hover:underline cursor-pointer ${appliedOffer?._id === offer._id ? 'text-green-600' : 'text-[#2874f0]'
+                    }`}
                 >
                   {appliedOffer?._id === offer._id ? 'Applied' : 'Apply'}
                 </button>
