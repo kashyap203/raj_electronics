@@ -342,12 +342,7 @@ const ProductDetailPage = () => {
               {/* Stock status */}
               <div className="mb-4">
                 {product.stock > 0 ? (
-                  <div>
-                    <span className="text-sm font-bold text-green-600 block">In Stock</span>
-                    {product.stock <= 5 && (
-                      <p className="text-xs text-amber-600 font-medium">Only {product.stock} left in stock - order soon.</p>
-                    )}
-                  </div>
+                  <span className="text-sm font-bold text-green-600 block">In Stock</span>
                 ) : (
                   <span className="text-sm font-bold text-red-600">Currently Unavailable</span>
                 )}

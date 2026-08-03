@@ -231,9 +231,8 @@ const CheckoutPage = () => {
 
             {/* Payment Method */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center justify-between">
-                <span>Payment Method</span>
-                <span className="text-xs text-green-600 flex items-center gap-1 font-normal"><FaLock size={10} /> 256-bit SSL Encrypted</span>
+              <h2 className="font-bold text-gray-800 mb-4">
+                Payment Method
               </h2>
               <div className="space-y-3">
                 {[
