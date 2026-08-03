@@ -1,7 +1,9 @@
 import Product from '../models/Product.js';
+import Category from '../models/Category.js';
+import Brand from '../models/Brand.js';
 import slugify from '../utils/slugify.js';
 
-const buildProductQuery = (query) => {
+const buildProductQuery = async (query) => {
   const filter = {};
   const {
     search,
@@ -22,8 +24,38 @@ const buildProductQuery = (query) => {
     ];
   }
 
-  if (category) filter.category = category;
-  if (brand) filter.brand = brand;
+  if (category) {
+    const isObjectId = typeof category === 'string' && /^[0-9a-fA-F]{24}$/.test(category);
+    if (isObjectId) {
+      filter.category = category;
+    } else {
+      const catDoc = await Category.findOne({
+        name: { $regex: new RegExp(`^${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+      });
+      if (catDoc) {
+        filter.category = catDoc._id;
+      } else {
+        filter.category = null;
+      }
+    }
+  }
+
+  if (brand) {
+    const isObjectId = typeof brand === 'string' && /^[0-9a-fA-F]{24}$/.test(brand);
+    if (isObjectId) {
+      filter.brand = brand;
+    } else {
+      const brandDoc = await Brand.findOne({
+        name: { $regex: new RegExp(`^${brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+      });
+      if (brandDoc) {
+        filter.brand = brandDoc._id;
+      } else {
+        filter.brand = null;
+      }
+    }
+  }
+
   if (featured === 'true') filter.featured = true;
   if (bestSelling === 'true') filter.bestSelling = true;
 
@@ -60,7 +92,7 @@ const buildProductQuery = (query) => {
 export const getProducts = async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 12;
-  const { filter, sortOption } = buildProductQuery(req.query);
+  const { filter, sortOption } = await buildProductQuery(req.query);
 
   const count = await Product.countDocuments(filter);
   const products = await Product.find(filter)
