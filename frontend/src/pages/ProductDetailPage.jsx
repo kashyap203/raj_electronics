@@ -145,7 +145,10 @@ const ProductDetailPage = () => {
   const quickSpecs = [
     { label: 'Brand', value: product.brand?.name },
     { label: 'Category', value: product.category?.name },
-    ...specEntries.slice(0, 3).map(([k, v]) => ({ label: k, value: v })),
+    ...specEntries
+      .filter(([k]) => !['brand', 'category'].includes(k.toLowerCase()))
+      .slice(0, 4)
+      .map(([k, v]) => ({ label: k, value: v })),
   ].filter((s) => s.value);
 
   return (
@@ -274,7 +277,7 @@ const ProductDetailPage = () => {
               <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes. Free doorstep installation on selected electronics.</p>
             </div>
 
-            <BankOffers
+            {/* <BankOffers
               price={baseDiscountedPrice}
               onApplyOffer={async (offer) => {
                 if (!user) return navigate('/login');
@@ -283,7 +286,7 @@ const ProductDetailPage = () => {
               }}
               appliedOffer={appliedOffer}
               offers={product.offers}
-            />
+            /> */}
 
             {/* Product Overview Highlights Table */}
             {quickSpecs.length > 0 && (

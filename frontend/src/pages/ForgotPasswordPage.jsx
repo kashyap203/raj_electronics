@@ -19,13 +19,10 @@ const ForgotPasswordPage = () => {
     setLoading(true);
     try {
       const { data } = await authService.forgotPassword(email);
-      setSuccess(data.message || 'Password reset link sent to your email.');
-      // For testing purposes, we might receive the token in response
-      if (data.resetToken) {
-        setTimeout(() => {
-          navigate(`/reset-password/${data.resetToken}`);
-        }, 2000);
-      }
+      setSuccess(data.message || 'OTP sent to your email.');
+      setTimeout(() => {
+        navigate('/reset-password', { state: { email } });
+      }, 2000);
     } catch (err) {
       setError(err.message || 'Something went wrong');
     } finally {
