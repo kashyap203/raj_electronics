@@ -204,6 +204,67 @@ const Navbar = () => {
                   </NavLink>
                 </li>
               ))}
+
+              {user && (
+                <>
+                  <li className="my-2 border-t border-white/10"></li>
+                  {user.role === 'admin' ? (
+                    <li>
+                      <NavLink
+                        to="/admin"
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) =>
+                          `block py-2.5 px-3 rounded-lg transition ${
+                            isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+                          }`
+                        }
+                      >
+                        Admin Panel
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <>
+                      <li>
+                        <NavLink
+                          to="/profile"
+                          onClick={() => setMobileOpen(false)}
+                          className={({ isActive }) =>
+                            `block py-2.5 px-3 rounded-lg transition ${
+                              isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+                            }`
+                          }
+                        >
+                          My Profile
+                        </NavLink>
+                      </li>
+                      <li>
+                        <NavLink
+                          to="/profile/orders"
+                          onClick={() => setMobileOpen(false)}
+                          className={({ isActive }) =>
+                            `block py-2.5 px-3 rounded-lg transition ${
+                              isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+                            }`
+                          }
+                        >
+                          My Orders
+                        </NavLink>
+                      </li>
+                    </>
+                  )}
+                  <li>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileOpen(false);
+                      }}
+                      className="block w-full text-left py-2.5 px-3 rounded-lg transition hover:bg-white/5 text-red-500"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>
