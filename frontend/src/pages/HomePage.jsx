@@ -121,19 +121,7 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Special Offers Banner */}
-        <section className="mb-12 bg-dark rounded-2xl p-8 md:p-12 text-white shadow-xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <p className="text-primary font-semibold mb-1 uppercase tracking-wide text-sm">Limited Time Offer</p>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-2">Up to 40% Off on ACs & TVs</h2>
-              <p className="text-gray-300">Free installation on selected models. Hurry, offer ends soon!</p>
-            </div>
-            <Link to="/products?category=Air Conditioners" className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shrink-0">
-              Grab the Deal
-            </Link>
-          </div>
-        </section>
+
 
         {latest.length > 0 && <ProductSection title="Latest Products" products={latest} link="/products?sort=latest" />}
         {bestSelling.length > 0 && <ProductSection title="Best Selling" products={bestSelling} link="/products?bestSelling=true" />}
