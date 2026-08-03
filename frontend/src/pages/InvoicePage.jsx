@@ -57,6 +57,7 @@ const InvoicePage = () => {
             <p className="text-sm text-gray-600 mt-1">55-19-20, Shreedev Complex, opp. Post Office</p>
             <p className="text-sm text-gray-600">Station Road, Patan (N.G.) - 384265, Gujarat</p>
             <p className="text-sm text-gray-600">Phone: +91 98243 45041</p>
+            <p className="text-sm text-gray-600">GSTIN: 24ALVPP7443G1ZL</p>
           </div>
           <div className="text-right">
             <h1 className="text-4xl font-black text-gray-800 tracking-widest uppercase mb-2">INVOICE</h1>
