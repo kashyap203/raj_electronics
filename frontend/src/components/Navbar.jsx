@@ -1,7 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FaHeart, FaShoppingCart, FaSearch, FaUser, FaBars, FaTimes } from 'react-icons/fa';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, useCart } from '../context/AppContext';
+import { productService } from '../services';
 import logo from '../assets/logo.png';
 
 const Navbar = () => {
@@ -11,6 +12,25 @@ const Navbar = () => {
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (search.trim().length > 1) {
+      setIsSearching(true);
+      const timer = setTimeout(() => {
+        productService.getAll({ search: search.trim() })
+          .then(res => {
+            setSearchResults((res.data.products || []).slice(0, 4));
+          })
+          .catch(err => console.error(err))
+          .finally(() => setIsSearching(false));
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setSearchResults([]);
+    }
+  }, [search]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -31,10 +51,8 @@ const Navbar = () => {
   ];
 
   const linkClass = ({ isActive }) =>
-    `relative text-sm font-medium py-1 transition-colors ${
-      isActive ? 'text-primary' : 'text-white hover:text-primary'
-    } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-primary after:transition-all after:duration-300 ${
-      isActive ? 'after:w-full' : 'after:w-0 hover:after:w-full'
+    `relative text-sm font-medium py-1 transition-colors ${isActive ? 'text-primary' : 'text-white hover:text-primary'
+    } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-primary after:transition-all after:duration-300 ${isActive ? 'after:w-full' : 'after:w-0 hover:after:w-full'
     }`;
 
   return (
@@ -64,33 +82,13 @@ const Navbar = () => {
             <div className="flex items-center gap-4 sm:gap-5">
               {/* Search toggle - desktop */}
               <div className="hidden md:flex items-center">
-                {searchOpen ? (
-                  <form onSubmit={handleSearch} className="flex items-center animate-fade-in">
-                    <input
-                      autoFocus
-                      type="text"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      onBlur={() => !search && setSearchOpen(false)}
-                      placeholder="Search products, brands..."
-                      className="w-56 px-3 py-1.5 rounded-l-full bg-white text-gray-800 text-sm outline-none"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-r-full transition"
-                    >
-                      <FaSearch size={14} />
-                    </button>
-                  </form>
-                ) : (
-                  <button
-                    onClick={() => setSearchOpen(true)}
-                    className="hover:text-primary transition"
-                    aria-label="Open search"
-                  >
-                    <FaSearch size={18} />
-                  </button>
-                )}
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="hover:text-primary transition"
+                  aria-label="Open search"
+                >
+                  <FaSearch size={20} />
+                </button>
               </div>
 
               <NavLink to="/wishlist" className="relative hover:text-primary transition">
@@ -195,8 +193,7 @@ const Navbar = () => {
                     to={link.to}
                     onClick={() => setMobileOpen(false)}
                     className={({ isActive }) =>
-                      `block py-2.5 px-3 rounded-lg transition ${
-                        isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+                      `block py-2.5 px-3 rounded-lg transition ${isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
                       }`
                     }
                   >
@@ -214,8 +211,7 @@ const Navbar = () => {
                         to="/admin"
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive }) =>
-                          `block py-2.5 px-3 rounded-lg transition ${
-                            isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+                          `block py-2.5 px-3 rounded-lg transition ${isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
                           }`
                         }
                       >
@@ -229,8 +225,7 @@ const Navbar = () => {
                           to="/profile"
                           onClick={() => setMobileOpen(false)}
                           className={({ isActive }) =>
-                            `block py-2.5 px-3 rounded-lg transition ${
-                              isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+                            `block py-2.5 px-3 rounded-lg transition ${isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
                             }`
                           }
                         >
@@ -242,8 +237,7 @@ const Navbar = () => {
                           to="/profile/orders"
                           onClick={() => setMobileOpen(false)}
                           className={({ isActive }) =>
-                            `block py-2.5 px-3 rounded-lg transition ${
-                              isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+                            `block py-2.5 px-3 rounded-lg transition ${isActive ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
                             }`
                           }
                         >
@@ -266,6 +260,95 @@ const Navbar = () => {
                 </>
               )}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Search Modal */}
+      {searchOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-fade-in">
+          <div className="w-full max-w-4xl animate-slide-up relative flex flex-col items-center">
+            <button
+              onClick={() => setSearchOpen(false)}
+              className="absolute -top-16 right-0 text-gray-300 hover:text-white transition cursor-pointer p-2"
+            >
+              <FaTimes size={24} />
+            </button>
+
+            <h2 className="text-3xl md:text-4xl font-black text-white text-center mb-8 drop-shadow-md">
+              What are you looking for?
+            </h2>
+            <form onSubmit={handleSearch} className="relative w-full z-10">
+              <input
+                autoFocus
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search for TVs, ACs, Laptops..."
+                className="w-full bg-white text-gray-900 text-xl px-6 py-4 md:py-5 rounded-2xl outline-none shadow-xl pl-14 pr-32"
+              />
+              <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 md:py-3 rounded-xl font-bold transition shadow-md"
+              >
+                Search
+              </button>
+            </form>
+
+            {/* Live Search Results */}
+            {search.trim().length > 1 && (
+              <div className="mt-4 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in max-h-[400px] overflow-y-auto">
+                {isSearching ? (
+                  <div className="p-6 text-center text-gray-500 font-medium">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="flex flex-col divide-y divide-gray-100">
+                    {searchResults.map(product => (
+                      <div
+                        key={product._id}
+                        onClick={() => {
+                          setSearchOpen(false);
+                          setSearch('');
+                          navigate(`/product/${product._id}`);
+                        }}
+                        className="flex items-center gap-4 p-4 hover:bg-blue-50 cursor-pointer transition"
+                      >
+                        <div className="w-16 h-16 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
+                          {product.images && product.images[0] ? (
+                            <img src={`http://127.0.0.1:5001${product.images[0]}`} alt={product.name} className="max-w-full max-h-full object-contain p-1" />
+                          ) : (
+                            <FaSearch className="text-gray-300" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 line-clamp-1">{product.name}</h4>
+                          <p className="text-sm font-semibold text-primary mt-1">₹{product.price}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={handleSearch}
+                      className="w-full p-4 text-center text-primary font-bold hover:bg-blue-50 transition text-sm uppercase tracking-wide"
+                    >
+                      View all results
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-6 text-center text-gray-500 font-medium">No products found for "{search}"</div>
+                )}
+              </div>
+            )}
+
+            {!search.trim() && (
+              <div className="mt-8 text-center text-black text-sm bg-red-400 bg-opacity-50 rounded-lg p-4" >
+                <p>
+                  Popular searches:
+                  <span className="text-white font-medium mx-1 cursor-pointer hover:underline" onClick={() => { setSearch('Smart TV'); handleSearch({ preventDefault: () => true }); }}>Smart TV</span>,
+                  <span className="text-white font-medium mx-1 cursor-pointer hover:underline" onClick={() => { setSearch('Air Conditioner'); handleSearch({ preventDefault: () => true }); }}>Air Conditioner</span>,
+                  <span className="text-white font-medium mx-1 cursor-pointer hover:underline" onClick={() => { setSearch('Refrigerator'); handleSearch({ preventDefault: () => true }); }}>Refrigerator</span>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
