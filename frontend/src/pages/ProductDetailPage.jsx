@@ -61,7 +61,7 @@ const ProductDetailPage = () => {
   if (!product) return null;
 
   const baseDiscountedPrice = getDiscountedPrice(product.price, product.discount);
-  
+
   let finalPrice = baseDiscountedPrice;
   if (appliedOffer) {
     if (appliedOffer.discountType === 'amount') {
@@ -162,7 +162,7 @@ const ProductDetailPage = () => {
       {/* Main Amazon-Style Product Container */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          
+
           {/* COLUMN 1: Image Gallery (5 cols on lg) */}
           <div className="lg:col-span-5 flex flex-col">
             <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 mb-4 group">
@@ -203,9 +203,8 @@ const ProductDetailPage = () => {
               </button>
               <button
                 onClick={handleWishlist}
-                className={`absolute top-4 right-4 p-3 rounded-full shadow-md transition ${
-                  inWishlist ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'
-                }`}
+                className={`absolute top-4 right-4 p-3 rounded-full shadow-md transition ${inWishlist ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'
+                  }`}
                 title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
               >
                 <FaHeart size={16} />
@@ -219,9 +218,8 @@ const ProductDetailPage = () => {
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}
-                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition bg-gray-50 p-1.5 ${
-                      i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition bg-gray-50 p-1.5 ${i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
+                      }`}
                   >
                     <img src={getImageUrl(img)} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-contain" />
                   </button>
@@ -276,14 +274,14 @@ const ProductDetailPage = () => {
               <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes. Free doorstep installation on selected electronics.</p>
             </div>
 
-            <BankOffers 
-              price={baseDiscountedPrice} 
+            <BankOffers
+              price={baseDiscountedPrice}
               onApplyOffer={async (offer) => {
                 if (!user) return navigate('/login');
                 setAppliedOffer(offer);
                 await applyOfferToCart(offer ? offer._id : null);
-              }} 
-              appliedOffer={appliedOffer} 
+              }}
+              appliedOffer={appliedOffer}
               offers={product.offers}
             />
 
@@ -443,11 +441,10 @@ const ProductDetailPage = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition ${
-                activeTab === tab.id
+              className={`px-6 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition ${activeTab === tab.id
                   ? 'border-primary text-primary bg-white'
                   : 'border-transparent text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
