@@ -14,6 +14,7 @@ import {
   FaAward,
   FaStore,
   FaRegStar,
+  FaShareAlt,
 } from 'react-icons/fa';
 import { Loader, StarRating, Alert, Breadcrumb } from '../components/common';
 import ProductCard from '../components/ProductCard';
@@ -41,6 +42,7 @@ const ProductDetailPage = () => {
   const [reviewSuccess, setReviewSuccess] = useState('');
   const [reviewLoading, setReviewLoading] = useState(false);
   const [appliedOffer, setAppliedOffer] = useState(null);
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -99,6 +101,25 @@ const ProductDetailPage = () => {
   const handleWishlist = async () => {
     if (!user) return navigate('/login');
     inWishlist ? await removeFromWishlist(product._id) : await addToWishlist(product._id);
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} at Raj Electronics!`,
+          url: url,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      setShareSuccess(true);
+      setTimeout(() => setShareSuccess(false), 3000);
+    }
   };
 
   const handleReviewSubmit = async (e) => {
@@ -173,6 +194,13 @@ const ProductDetailPage = () => {
                   {product.discount}% OFF
                 </span>
               )}
+              <button
+                onClick={handleShare}
+                className="absolute top-4 right-16 p-3 rounded-full shadow-md transition bg-white/90 text-gray-600 hover:text-primary"
+                title="Share Product"
+              >
+                <FaShareAlt size={16} />
+              </button>
               <button
                 onClick={handleWishlist}
                 className={`absolute top-4 right-4 p-3 rounded-full shadow-md transition ${
@@ -360,6 +388,9 @@ const ProductDetailPage = () => {
 
               {cartSuccess && (
                 <Alert type="success" message="Added to cart!" onClose={() => setCartSuccess(false)} />
+              )}
+              {shareSuccess && (
+                <Alert type="success" message="Link copied to clipboard!" onClose={() => setShareSuccess(false)} />
               )}
 
               {/* Action Buttons */}

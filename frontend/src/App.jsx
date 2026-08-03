@@ -31,6 +31,7 @@ import OrdersAdminPage from './pages/admin/OrdersAdminPage';
 import UsersAdminPage from './pages/admin/UsersAdminPage';
 import AdminDeliveryCities from './pages/admin/AdminDeliveryCities';
 import OffersAdminPage from './pages/admin/OffersAdminPage';
+import AdminSliders from './pages/admin/AdminSliders';
 
 function App() {
   return (
@@ -73,6 +74,7 @@ function App() {
               <Route path="users" element={<UsersAdminPage />} />
               <Route path="delivery-cities" element={<AdminDeliveryCities />} />
               <Route path="offers" element={<OffersAdminPage />} />
+              <Route path="sliders" element={<AdminSliders />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />

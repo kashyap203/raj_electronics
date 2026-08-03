@@ -17,6 +17,7 @@ import userRoutes from './routes/userRoutes.js';
 import deliveryCityRoutes from './routes/deliveryCityRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import offerRoutes from './routes/offerRoutes.js';
+import sliderRoutes from './routes/sliderRoutes.js';
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/delivery-cities', deliveryCityRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/offers', offerRoutes);
+app.use('/api/sliders', sliderRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

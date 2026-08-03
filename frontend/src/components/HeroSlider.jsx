@@ -1,103 +1,61 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FaChevronLeft, FaChevronRight, FaFire, FaRocket, FaBolt, FaCrown } from 'react-icons/fa';
+import { sliderService } from '../services';
 
-import heroElectronics from '../assets/hero-electronics.svg';
-import heroTv from '../assets/hero-tv.svg';
-import heroAc from '../assets/hero-ac.svg';
-import heroFridge from '../assets/hero-fridge.svg';
-
-const slides = [
-  {
-    id: 1,
-    tag: 'Active Offer',
-    tagIcon: FaFire,
-    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    title: 'Mega Festival Sale',
-    highlight: 'Up to 40% OFF',
-    description: 'Upgrade your home with latest Smart TVs, Refrigerators, ACs, and Washing Machines at unbeatable prices. Limited period deals!',
-    primaryBtnText: 'Shop Active Offers',
-    primaryBtnLink: '/products',
-    secondaryBtnText: 'Browse Categories',
-    secondaryBtnLink: '/categories',
-    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1000&auto=format&fit=crop&q=80',
-    localFallback: heroElectronics,
-  },
-  {
-    id: 2,
-    tag: 'Trending Launch',
-    tagIcon: FaRocket,
-    badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    title: 'Next-Gen 4K OLED TVs',
-    highlight: 'Cinematic Experience',
-    description: 'Immerse yourself in ultra-vivid colors, deep contrast, and AI sound enhancement with top branded OLED & QLED displays.',
-    primaryBtnText: 'Explore Smart TVs',
-    primaryBtnLink: '/products?category=Televisions',
-    secondaryBtnText: 'View Trending',
-    secondaryBtnLink: '/products?sort=latest',
-    image: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1000&auto=format&fit=crop&q=80',
-    localFallback: heroTv,
-  },
-  {
-    id: 3,
-    tag: 'Hot Deal',
-    tagIcon: FaBolt,
-    badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-    title: '5-Star Smart Air Conditioners',
-    highlight: 'Instant Cooling Savings',
-    description: 'Beat the heat with heavy-duty inverter ACs featuring fast cooling, dust filters, and zero maintenance warranty.',
-    primaryBtnText: 'Grab AC Deals',
-    primaryBtnLink: '/products?category=Air%20Conditioners',
-    secondaryBtnText: 'Best Sellers',
-    secondaryBtnLink: '/products?bestSelling=true',
-    image: 'https://images.unsplash.com/photo-1631545806606-22dadf3e8b0a?w=1000&auto=format&fit=crop&q=80',
-    localFallback: heroAc,
-  },
-  {
-    id: 4,
-    tag: 'Trending Launch',
-    tagIcon: FaCrown,
-    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    title: 'Smart Home Refrigerators',
-    highlight: 'Advanced Twin Cooling',
-    description: 'Convertible multi-door double refrigerators with digital inverter tech and door cooling to keep food fresh twice as long.',
-    primaryBtnText: 'Discover Refrigerators',
-    primaryBtnLink: '/products?category=Refrigerators',
-    secondaryBtnText: 'View All Deals',
-    secondaryBtnLink: '/products',
-    image: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=1000&auto=format&fit=crop&q=80',
-    localFallback: heroFridge,
-  },
-];
+const iconMap = {
+  FaFire,
+  FaRocket,
+  FaBolt,
+  FaCrown
+};
 
 const HeroSlider = () => {
+  const [slides, setSlides] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [imgSrcs, setImgSrcs] = useState({});
 
-  const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  useEffect(() => {
+    const fetchSlides = async () => {
+      try {
+        const { data } = await sliderService.getAll();
+        setSlides(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch sliders', err);
+      }
+    };
+    fetchSlides();
   }, []);
+
+  const nextSlide = useCallback(() => {
+    if (slides.length === 0) return;
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
 
   const prevSlide = useCallback(() => {
+    if (slides.length === 0) return;
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || slides.length <= 1) return;
     const timer = setInterval(() => {
       nextSlide();
     }, 4500);
 
     return () => clearInterval(timer);
-  }, [nextSlide, isPaused]);
+  }, [nextSlide, isPaused, slides.length]);
 
   const handleImageError = (slideId, fallbackUrl) => {
+    if (!fallbackUrl) return;
     setImgSrcs((prev) => ({
       ...prev,
       [slideId]: fallbackUrl,
     }));
   };
+
+  if (slides.length === 0) return null;
 
   return (
     <section
@@ -107,12 +65,12 @@ const HeroSlider = () => {
     >
       {slides.map((slide, index) => {
         const isActive = index === currentSlide;
-        const IconComponent = slide.tagIcon;
-        const activeImgSrc = imgSrcs[slide.id] || slide.image;
+        const IconComponent = iconMap[slide.tagIcon] || FaFire;
+        const activeImgSrc = imgSrcs[slide._id] || slide.image;
 
         return (
           <div
-            key={slide.id}
+            key={slide._id}
             className={`absolute inset-0 transition-opacity duration-700 ease-in-out bg-gradient-to-r from-dark via-dark-light to-dark ${
               isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
             }`}
@@ -132,30 +90,38 @@ const HeroSlider = () => {
                 {/* Heading */}
                 <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-2 sm:mb-4">
                   {slide.title}
-                  <span className="block text-primary text-xl sm:text-3xl md:text-4xl lg:text-5xl mt-1 sm:mt-2 font-bold">
-                    {slide.highlight}
-                  </span>
+                  {slide.highlight && (
+                    <span className="block text-primary text-xl sm:text-3xl md:text-4xl lg:text-5xl mt-1 sm:mt-2 font-bold">
+                      {slide.highlight}
+                    </span>
+                  )}
                 </h1>
 
                 {/* Description */}
-                <p className="text-gray-300 text-xs sm:text-base md:text-lg mb-4 sm:mb-8 max-w-xl mx-auto md:mx-0 line-clamp-2 sm:line-clamp-3 leading-relaxed">
-                  {slide.description}
-                </p>
+                {slide.description && (
+                  <p className="text-gray-300 text-xs sm:text-base md:text-lg mb-4 sm:mb-8 max-w-xl mx-auto md:mx-0 line-clamp-2 sm:line-clamp-3 leading-relaxed">
+                    {slide.description}
+                  </p>
+                )}
 
                 {/* Call to Actions */}
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 sm:gap-4">
-                  <Link
-                    to={slide.primaryBtnLink}
-                    className="bg-primary hover:bg-primary-dark text-white font-bold px-5 py-2.5 sm:px-8 sm:py-4 rounded-full shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 text-xs sm:text-sm md:text-base"
-                  >
-                    {slide.primaryBtnText}
-                  </Link>
-                  <Link
-                    to={slide.secondaryBtnLink}
-                    className="border border-white/40 hover:border-white text-white hover:bg-white/10 font-semibold px-5 py-2.5 sm:px-8 sm:py-4 rounded-full backdrop-blur-sm transition-all duration-200 text-xs sm:text-sm md:text-base"
-                  >
-                    {slide.secondaryBtnText}
-                  </Link>
+                  {slide.primaryBtnText && slide.primaryBtnLink && (
+                    <Link
+                      to={slide.primaryBtnLink}
+                      className="bg-primary hover:bg-primary-dark text-white font-bold px-5 py-2.5 sm:px-8 sm:py-4 rounded-full shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 text-xs sm:text-sm md:text-base"
+                    >
+                      {slide.primaryBtnText}
+                    </Link>
+                  )}
+                  {slide.secondaryBtnText && slide.secondaryBtnLink && (
+                    <Link
+                      to={slide.secondaryBtnLink}
+                      className="border border-white/40 hover:border-white text-white hover:bg-white/10 font-semibold px-5 py-2.5 sm:px-8 sm:py-4 rounded-full backdrop-blur-sm transition-all duration-200 text-xs sm:text-sm md:text-base"
+                    >
+                      {slide.secondaryBtnText}
+                    </Link>
+                  )}
                 </div>
               </div>
 
@@ -165,7 +131,7 @@ const HeroSlider = () => {
                   <img
                     src={activeImgSrc}
                     alt={slide.title}
-                    onError={() => handleImageError(slide.id, slide.localFallback)}
+                    onError={() => handleImageError(slide._id, null)}
                     className="w-full h-[160px] sm:h-[280px] md:h-[380px] lg:h-[420px] object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent md:hidden" />
@@ -176,37 +142,41 @@ const HeroSlider = () => {
         );
       })}
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        aria-label="Previous Slide"
-        className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
-      >
-        <FaChevronLeft className="text-sm md:text-xl" />
-      </button>
-      <button
-        onClick={nextSlide}
-        aria-label="Next Slide"
-        className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
-      >
-        <FaChevronRight className="text-sm md:text-xl" />
-      </button>
-
-      {/* Bottom Indicators / Dots */}
-      <div className="absolute bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/15">
-        {slides.map((_, idx) => (
+      {slides.length > 1 && (
+        <>
+          {/* Navigation Arrows */}
           <button
-            key={idx}
-            onClick={() => setCurrentSlide(idx)}
-            aria-label={`Go to slide ${idx + 1}`}
-            className={`transition-all duration-300 rounded-full cursor-pointer ${
-              currentSlide === idx
-                ? 'w-6 sm:w-9 h-2.5 sm:h-3 bg-primary'
-                : 'w-2.5 sm:w-3 h-2.5 sm:h-3 bg-white/40 hover:bg-white/80'
-            }`}
-          />
-        ))}
-      </div>
+            onClick={prevSlide}
+            aria-label="Previous Slide"
+            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
+          >
+            <FaChevronLeft className="text-sm md:text-xl" />
+          </button>
+          <button
+            onClick={nextSlide}
+            aria-label="Next Slide"
+            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
+          >
+            <FaChevronRight className="text-sm md:text-xl" />
+          </button>
+
+          {/* Bottom Indicators / Dots */}
+          <div className="absolute bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/15">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  currentSlide === idx
+                    ? 'w-6 sm:w-9 h-2.5 sm:h-3 bg-primary'
+                    : 'w-2.5 sm:w-3 h-2.5 sm:h-3 bg-white/40 hover:bg-white/80'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 };
