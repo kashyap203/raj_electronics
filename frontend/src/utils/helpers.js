@@ -1,11 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api';
-const BACKEND_BASE = API_URL.startsWith('http') ? API_URL.replace(/\/api\/?$/, '') : '';
 
 export const getImageUrl = (path) => {
   if (!path) return 'https://via.placeholder.com/300x300?text=No+Image';
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return BACKEND_BASE ? `${BACKEND_BASE}${cleanPath}` : cleanPath;
+  return `${API_URL}${cleanPath}`;
 };
 
 export const formatPrice = (price) => {

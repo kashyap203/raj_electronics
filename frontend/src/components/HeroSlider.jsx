@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FaChevronLeft, FaChevronRight, FaFire, FaRocket, FaBolt, FaCrown } from 'react-icons/fa';
 import { sliderService } from '../services';
+import { getImageUrl } from '../utils/helpers.js';
 
 const iconMap = {
   FaFire,
@@ -66,7 +67,7 @@ const HeroSlider = () => {
       {slides.map((slide, index) => {
         const isActive = index === currentSlide;
         const IconComponent = iconMap[slide.tagIcon] || FaFire;
-        const activeImgSrc = imgSrcs[slide._id] || slide.image;
+        const activeImgSrc = imgSrcs[slide._id] || getImageUrl(slide.image);
 
         return (
           <div
