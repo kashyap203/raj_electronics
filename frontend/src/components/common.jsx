@@ -67,33 +67,85 @@ export const EmptyState = ({ icon: Icon, title, description, action }) => (
 
 export const Pagination = ({ page, pages, onPageChange }) => {
   if (pages <= 1) return null;
+
+  const getPageNumbers = () => {
+    const pagesToShow = [];
+    if (pages <= 5) {
+      for (let i = 1; i <= pages; i++) pagesToShow.push(i);
+    } else {
+      if (page <= 3) {
+        pagesToShow.push(1, 2, 3, 4, '...', pages);
+      } else if (page >= pages - 2) {
+        pagesToShow.push(1, '...', pages - 3, pages - 2, pages - 1, pages);
+      } else {
+        pagesToShow.push(1, '...', page - 1, page, page + 1, '...', pages);
+      }
+    }
+    return pagesToShow;
+  };
+
   return (
-    <div className="flex justify-center gap-2 mt-8">
-      <button
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        className="px-4 py-2 rounded-full border border-gray-300 disabled:opacity-50 hover:bg-gray-100 transition"
-      >
-        Previous
-      </button>
-      {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
+    <div className="mt-8 w-full flex flex-col items-center">
+      {/* Mobile Layout */}
+      <div className="flex sm:hidden w-full max-w-[300px] justify-between items-center gap-2">
         <button
-          key={p}
-          onClick={() => onPageChange(p)}
-          className={`px-4 py-2 rounded-full transition ${
-            p === page ? 'bg-primary text-white' : 'border border-gray-300 hover:bg-gray-100'
-          }`}
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
+          className="px-4 py-2 text-sm rounded-full border border-gray-300 disabled:opacity-50 hover:bg-gray-100 transition"
         >
-          {p}
+          Prev
         </button>
-      ))}
-      <button
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= pages}
-        className="px-4 py-2 rounded-full border border-gray-300 disabled:opacity-50 hover:bg-gray-100 transition"
-      >
-        Next
-      </button>
+        <span className="text-sm text-gray-600 font-medium whitespace-nowrap">
+          Page {page} of {pages}
+        </span>
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= pages}
+          className="px-4 py-2 text-sm rounded-full border border-gray-300 disabled:opacity-50 hover:bg-gray-100 transition"
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden sm:flex justify-center items-center gap-2">
+        <button
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
+          className="px-4 py-2 text-sm rounded-full border border-gray-300 disabled:opacity-50 hover:bg-gray-100 transition shrink-0"
+        >
+          Previous
+        </button>
+        
+        {getPageNumbers().map((p, index) => {
+          if (p === '...') {
+            return (
+              <span key={`dots-${index}`} className="px-1 text-gray-500 flex items-center justify-center shrink-0">
+                ...
+              </span>
+            );
+          }
+          return (
+            <button
+              key={p}
+              onClick={() => onPageChange(p)}
+              className={`w-9 h-9 text-sm flex items-center justify-center rounded-full transition shrink-0 ${
+                p === page ? 'bg-primary text-white font-medium' : 'border border-gray-300 hover:bg-gray-100'
+              }`}
+            >
+              {p}
+            </button>
+          );
+        })}
+        
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= pages}
+          className="px-4 py-2 text-sm rounded-full border border-gray-300 disabled:opacity-50 hover:bg-gray-100 transition shrink-0"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
