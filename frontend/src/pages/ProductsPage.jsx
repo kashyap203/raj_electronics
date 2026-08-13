@@ -29,6 +29,20 @@ const ProductsPage = () => {
   });
 
   useEffect(() => {
+    setFilters({
+      search: searchParams.get('search') || '',
+      category: searchParams.get('category') || '',
+      brand: searchParams.get('brand') || '',
+      minPrice: searchParams.get('minPrice') || '',
+      maxPrice: searchParams.get('maxPrice') || '',
+      sort: searchParams.get('sort') || '',
+      inStock: searchParams.get('inStock') || '',
+      featured: searchParams.get('featured') || '',
+      bestSelling: searchParams.get('bestSelling') || '',
+    });
+  }, [searchParams]);
+
+  useEffect(() => {
     categoryService.getAll().then(r => setCategories(r.data)).catch(() => {});
     brandService.getAll().then(r => setBrands(r.data)).catch(() => {});
   }, []);
@@ -38,10 +52,10 @@ const ProductsPage = () => {
     try {
       const params = { page: currentPage, limit: 12, ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)) };
       const { data } = await productService.getAll(params);
-      setProducts(data.products);
-      setPage(data.page);
-      setPages(data.pages);
-      setTotal(data.total);
+      setProducts(data?.products || []);
+      setPage(data?.page || 1);
+      setPages(data?.pages || 1);
+      setTotal(data?.total || 0);
     } catch {
       setProducts([]);
     } finally {

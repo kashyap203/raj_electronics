@@ -91,3 +91,12 @@ export const offerService = {
   update: (id, data) => api.put(`/offers/${id}`, data),
   delete: (id) => api.delete(`/offers/${id}`),
 };
+
+export const sliderService = {
+  getAll: () => api.get('/sliders'),
+  getAdminAll: () => api.get('/sliders/admin'),
+  getById: (id) => api.get(`/sliders/${id}`),
+  create: (data) => api.post('/sliders', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id, data) => api.put(`/sliders/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id) => api.delete(`/sliders/${id}`),
+};

@@ -35,11 +35,11 @@ const HomePage = () => {
           categoryService.getAll(),
           brandService.getAll()
         ]);
-        setFeatured(featRes.data.products);
-        setLatest(latestRes.data.products);
-        setBestSelling(bestRes.data.products);
-        setCategories(catRes.data);
-        setBrands(brandRes.data);
+        setFeatured(featRes?.data?.products || []);
+        setLatest(latestRes?.data?.products || []);
+        setBestSelling(bestRes?.data?.products || []);
+        setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
+        setBrands(Array.isArray(brandRes?.data) ? brandRes.data : []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -58,7 +58,7 @@ const HomePage = () => {
         </Link>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((p) => (
+        {(products || []).map((p) => (
           <ProductCard key={p._id} product={p} />
         ))}
       </div>
@@ -121,19 +121,7 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Special Offers Banner */}
-        <section className="mb-12 bg-dark rounded-2xl p-8 md:p-12 text-white shadow-xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <p className="text-primary font-semibold mb-1 uppercase tracking-wide text-sm">Limited Time Offer</p>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-2">Up to 40% Off on ACs & TVs</h2>
-              <p className="text-gray-300">Free installation on selected models. Hurry, offer ends soon!</p>
-            </div>
-            <Link to="/products?category=Air Conditioners" className="bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shrink-0">
-              Grab the Deal
-            </Link>
-          </div>
-        </section>
+
 
         {latest.length > 0 && <ProductSection title="Latest Products" products={latest} link="/products?sort=latest" />}
         {bestSelling.length > 0 && <ProductSection title="Best Selling" products={bestSelling} link="/products?bestSelling=true" />}
@@ -192,9 +180,9 @@ const HomePage = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Enter your email address"
               required
-              className="flex-1 px-4 py-3 rounded-full text-gray-800 outline-none"
+              className="flex-1 px-5 py-3 rounded-full bg-white text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-primary shadow-sm"
             />
             <button type="submit" className="bg-primary hover:bg-primary-dark text-dark font-bold px-6 py-3 rounded-full transition">
               Subscribe

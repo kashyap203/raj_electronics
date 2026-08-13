@@ -1,13 +1,26 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, CartProvider } from './context/AppContext';
 import { ProtectedRoute, GuestRoute } from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
+
+  return null;
+};
+
 // Pages
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
@@ -31,10 +44,12 @@ import OrdersAdminPage from './pages/admin/OrdersAdminPage';
 import UsersAdminPage from './pages/admin/UsersAdminPage';
 import AdminDeliveryCities from './pages/admin/AdminDeliveryCities';
 import OffersAdminPage from './pages/admin/OffersAdminPage';
+import AdminSliders from './pages/admin/AdminSliders';
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
           <Routes>
@@ -50,6 +65,8 @@ function App() {
               {/* Guest only */}
               <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
               <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+              <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
+              <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 
               {/* Protected user routes */}
               <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
@@ -73,6 +90,7 @@ function App() {
               <Route path="users" element={<UsersAdminPage />} />
               <Route path="delivery-cities" element={<AdminDeliveryCities />} />
               <Route path="offers" element={<OffersAdminPage />} />
+              <Route path="sliders" element={<AdminSliders />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />

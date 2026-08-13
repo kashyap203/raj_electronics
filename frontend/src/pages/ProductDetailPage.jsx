@@ -14,15 +14,17 @@ import {
   FaAward,
   FaStore,
   FaRegStar,
+  FaShareAlt,
 } from 'react-icons/fa';
 import { Loader, StarRating, Alert, Breadcrumb } from '../components/common';
 import ProductCard from '../components/ProductCard';
 import BankOffers from '../components/BankOffers';
 import { productService } from '../services';
-import { formatPrice, getDiscountedPrice, getImageUrl } from '../utils/helpers';
+import { formatPrice, getDiscountedPrice } from '../utils/helpers';
 import { useAuth, useCart } from '../context/AppContext';
 
 const ProductDetailPage = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -41,6 +43,7 @@ const ProductDetailPage = () => {
   const [reviewSuccess, setReviewSuccess] = useState('');
   const [reviewLoading, setReviewLoading] = useState(false);
   const [appliedOffer, setAppliedOffer] = useState(null);
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -59,7 +62,7 @@ const ProductDetailPage = () => {
   if (!product) return null;
 
   const baseDiscountedPrice = getDiscountedPrice(product.price, product.discount);
-  
+
   let finalPrice = baseDiscountedPrice;
   if (appliedOffer) {
     if (appliedOffer.discountType === 'amount') {
@@ -101,6 +104,25 @@ const ProductDetailPage = () => {
     inWishlist ? await removeFromWishlist(product._id) : await addToWishlist(product._id);
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} at Raj Electronics!`,
+          url: url,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      setShareSuccess(true);
+      setTimeout(() => setShareSuccess(false), 3000);
+    }
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!user) return navigate('/login');
@@ -124,7 +146,10 @@ const ProductDetailPage = () => {
   const quickSpecs = [
     { label: 'Brand', value: product.brand?.name },
     { label: 'Category', value: product.category?.name },
-    ...specEntries.slice(0, 3).map(([k, v]) => ({ label: k, value: v })),
+    ...specEntries
+      .filter(([k]) => !['brand', 'category'].includes(k.toLowerCase()))
+      .slice(0, 4)
+      .map(([k, v]) => ({ label: k, value: v })),
   ].filter((s) => s.value);
 
   return (
@@ -141,12 +166,16 @@ const ProductDetailPage = () => {
       {/* Main Amazon-Style Product Container */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          
+
           {/* COLUMN 1: Image Gallery (5 cols on lg) */}
           <div className="lg:col-span-5 flex flex-col">
             <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 mb-4 group">
               <img
-                src={getImageUrl(images[activeImage])}
+                src={
+                  product.images?.length
+                    ? `${API_URL}${product.images[activeImage]}`
+                    : 'https://via.placeholder.com/300x300?text=No+Image'
+                }
                 alt={product.name}
                 className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-300"
               />
@@ -174,10 +203,16 @@ const ProductDetailPage = () => {
                 </span>
               )}
               <button
+                onClick={handleShare}
+                className="absolute top-4 right-16 p-3 rounded-full shadow-md transition bg-white/90 text-gray-600 hover:text-primary"
+                title="Share Product"
+              >
+                <FaShareAlt size={16} />
+              </button>
+              <button
                 onClick={handleWishlist}
-                className={`absolute top-4 right-4 p-3 rounded-full shadow-md transition ${
-                  inWishlist ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'
-                }`}
+                className={`absolute top-4 right-4 p-3 rounded-full shadow-md transition ${inWishlist ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'
+                  }`}
                 title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
               >
                 <FaHeart size={16} />
@@ -191,11 +226,18 @@ const ProductDetailPage = () => {
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}
-                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition bg-gray-50 p-1.5 ${
-                      i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition bg-gray-50 p-1.5 ${i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
+                      }`}
                   >
-                    <img src={getImageUrl(img)} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-contain" />
+                    <img
+                      src={
+                        img
+                          ? `${API_URL}${img}`
+                          : 'https://via.placeholder.com/300x300?text=No+Image'
+                      }
+                      alt={`Thumbnail ${i + 1}`}
+                      className="w-full h-full object-contain"
+                    />
                   </button>
                 ))}
               </div>
@@ -248,16 +290,16 @@ const ProductDetailPage = () => {
               <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes. Free doorstep installation on selected electronics.</p>
             </div>
 
-            <BankOffers 
-              price={baseDiscountedPrice} 
+            {/* <BankOffers
+              price={baseDiscountedPrice}
               onApplyOffer={async (offer) => {
                 if (!user) return navigate('/login');
                 setAppliedOffer(offer);
                 await applyOfferToCart(offer ? offer._id : null);
-              }} 
-              appliedOffer={appliedOffer} 
+              }}
+              appliedOffer={appliedOffer}
               offers={product.offers}
-            />
+            /> */}
 
             {/* Product Overview Highlights Table */}
             {quickSpecs.length > 0 && (
@@ -313,12 +355,7 @@ const ProductDetailPage = () => {
               {/* Stock status */}
               <div className="mb-4">
                 {product.stock > 0 ? (
-                  <div>
-                    <span className="text-sm font-bold text-green-600 block">In Stock</span>
-                    {product.stock <= 5 && (
-                      <p className="text-xs text-amber-600 font-medium">Only {product.stock} left in stock - order soon.</p>
-                    )}
-                  </div>
+                  <span className="text-sm font-bold text-green-600 block">In Stock</span>
                 ) : (
                   <span className="text-sm font-bold text-red-600">Currently Unavailable</span>
                 )}
@@ -360,6 +397,9 @@ const ProductDetailPage = () => {
 
               {cartSuccess && (
                 <Alert type="success" message="Added to cart!" onClose={() => setCartSuccess(false)} />
+              )}
+              {shareSuccess && (
+                <Alert type="success" message="Link copied to clipboard!" onClose={() => setShareSuccess(false)} />
               )}
 
               {/* Action Buttons */}
@@ -412,11 +452,10 @@ const ProductDetailPage = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition ${
-                activeTab === tab.id
+              className={`px-6 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition ${activeTab === tab.id
                   ? 'border-primary text-primary bg-white'
                   : 'border-transparent text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               {tab.label}
             </button>

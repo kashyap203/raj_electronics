@@ -78,8 +78,8 @@ const BrandsAdminPage = () => {
       <Alert message={success} type="success" onClose={() => setSuccess('')} />
 
       {loading ? <Loader /> : (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-          <table className="w-full text-sm">
+        <div className="bg-white rounded-2xl shadow-sm overflow-x-auto border border-gray-100">
+          <table className="w-full text-sm min-w-[600px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 {['Logo', 'Brand Name', 'Description', 'Actions'].map(h => (

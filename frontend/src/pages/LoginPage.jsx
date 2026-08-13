@@ -9,7 +9,7 @@ const LoginPage = () => {
   const { login, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from ? (location.state.from.pathname + (location.state.from.search || '')) : '/';
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -76,6 +76,11 @@ const LoginPage = () => {
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
+            </div>
+            <div className="flex justify-end mt-2">
+              <Link to="/forgot-password" className="text-sm font-bold text-primary hover:text-primary-dark hover:underline">
+                Forgot Password?
+              </Link>
             </div>
           </div>
 

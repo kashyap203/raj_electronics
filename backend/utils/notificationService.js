@@ -71,7 +71,7 @@ const statusConfig = {
  * @param {Object} order - Populated or raw Order object from MongoDB
  * @param {String} status - New order status (e.g., 'Shipped', 'Delivered')
  */
-export const sendOrderStatusNotification = async (order, status) => {
+export const sendOrderStatusNotification = async (order, status, req = null) => {
   try {
     const config = statusConfig[status] || {
       badgeColor: '#4B5563',
@@ -84,7 +84,14 @@ export const sendOrderStatusNotification = async (order, status) => {
     const customerName = order.user?.name || order.address?.fullName || 'Valued Customer';
     const customerPhone = order.address?.phone || order.user?.phone;
     const orderIdShort = order._id.toString().slice(-8).toUpperCase();
-    const appUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    let appUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    if (req) {
+      const origin = req.get('origin') || (req.get('referer') ? new URL(req.get('referer')).origin : null);
+      if (origin && !origin.includes('undefined')) {
+        appUrl = origin;
+      }
+    }
 
     console.log(`\n==================================================`);
     console.log(`[NOTIFICATION SERVICE] Triggered for Order #${orderIdShort}`);

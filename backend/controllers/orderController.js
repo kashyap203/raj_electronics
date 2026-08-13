@@ -74,7 +74,7 @@ export const createOrder = async (req, res) => {
 
   // Trigger automated Order Confirmation notification (Email & SMS)
   const populatedOrder = await Order.findById(order._id).populate('user', 'name email phone');
-  sendOrderStatusNotification(populatedOrder || order, 'Confirmed');
+  sendOrderStatusNotification(populatedOrder || order, 'Confirmed', req);
 
   res.status(201).json(order);
 };
@@ -131,7 +131,7 @@ export const cancelOrder = async (req, res) => {
 
   // Trigger Cancellation notification
   const populatedOrder = await Order.findById(order._id).populate('user', 'name email phone');
-  sendOrderStatusNotification(populatedOrder || order, 'Cancelled');
+  sendOrderStatusNotification(populatedOrder || order, 'Cancelled', req);
 
   res.json(order);
 };
@@ -171,7 +171,7 @@ export const updateOrderStatus = async (req, res) => {
   // Trigger Status Update notification (e.g. Confirmed -> Shipped / Delivered / Packed)
   if (previousStatus !== newStatus) {
     const populatedOrder = await Order.findById(order._id).populate('user', 'name email phone');
-    sendOrderStatusNotification(populatedOrder || order, newStatus);
+    sendOrderStatusNotification(populatedOrder || order, newStatus, req);
   }
 
   res.json(order);
