@@ -140,8 +140,8 @@ const AdminSliders = () => {
       {loading ? (
         <div className="text-center py-10">Loading...</div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-white rounded-2xl shadow-sm overflow-x-auto border border-gray-100">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-gray-600 text-sm">
                 <th className="p-4 font-medium">Image</th>
@@ -197,7 +197,7 @@ const AdminSliders = () => {
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 transition text-2xl">&times;</button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                   <input required type="text" name="title" value={currentSlider.title} onChange={handleInputChange} placeholder="e.g. Mega Festival Sale" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
@@ -213,7 +213,7 @@ const AdminSliders = () => {
                 <textarea name="description" value={currentSlider.description} onChange={handleInputChange} placeholder="Description..." rows="2" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm"></textarea>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tag Text</label>
                   <input type="text" name="tag" value={currentSlider.tag} onChange={handleInputChange} placeholder="e.g. Active Offer" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
@@ -238,7 +238,7 @@ const AdminSliders = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Primary Button Text</label>
                   <input type="text" name="primaryBtnText" value={currentSlider.primaryBtnText} onChange={handleInputChange} placeholder="e.g. Shop Now" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
@@ -268,7 +268,7 @@ const AdminSliders = () => {
                 )}
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex items-center gap-2 pt-2">
                   <input type="checkbox" name="isActive" id="isActive" checked={currentSlider.isActive} onChange={handleInputChange} className="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer" />
                   <label htmlFor="isActive" className="text-sm text-gray-700 cursor-pointer">Active Slide</label>
