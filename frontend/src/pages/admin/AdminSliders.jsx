@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaImages } from 'react-icons/fa';
 import { sliderService } from '../../services';
 import { Alert, ConfirmDialog } from '../../components/common';
+import { getImageUrl } from '../../utils/helpers.js';
 
 const AdminSliders = () => {
   const [sliders, setSliders] = useState([]);
@@ -155,7 +156,7 @@ const AdminSliders = () => {
               {sliders.map(slider => (
                 <tr key={slider._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
                   <td className="p-4">
-                    <img src={slider.image && slider.image.startsWith('http') ? slider.image : `http://localhost:5001${slider.image}`} alt={slider.title} className="w-16 h-10 object-cover rounded shadow-sm" />
+                    <img src={getImageUrl(slider.image)} alt={slider.title} className="w-16 h-10 object-cover rounded shadow-sm" />
                   </td>
                   <td className="p-4">
                     <p className="font-semibold text-gray-800">{slider.title}</p>
@@ -262,7 +263,7 @@ const AdminSliders = () => {
                 
                 {(currentSlider.imagePreview || currentSlider.image) && (
                   <div className="mt-2">
-                    <img src={currentSlider.imagePreview || (currentSlider.image.startsWith('http') ? currentSlider.image : `http://localhost:5001${currentSlider.image}`)} alt="Preview" className="h-24 object-cover rounded-xl shadow border border-gray-200" />
+                    <img src={currentSlider.imagePreview || getImageUrl(currentSlider.image)} alt="Preview" className="h-24 object-cover rounded-xl shadow border border-gray-200" />
                   </div>
                 )}
               </div>

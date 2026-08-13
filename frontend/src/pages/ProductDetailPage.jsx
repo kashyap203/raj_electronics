@@ -20,10 +20,11 @@ import { Loader, StarRating, Alert, Breadcrumb } from '../components/common';
 import ProductCard from '../components/ProductCard';
 import BankOffers from '../components/BankOffers';
 import { productService } from '../services';
-import { formatPrice, getDiscountedPrice, getImageUrl } from '../utils/helpers';
+import { formatPrice, getDiscountedPrice } from '../utils/helpers';
 import { useAuth, useCart } from '../context/AppContext';
 
 const ProductDetailPage = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -170,7 +171,11 @@ const ProductDetailPage = () => {
           <div className="lg:col-span-5 flex flex-col">
             <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 mb-4 group">
               <img
-                src={getImageUrl(images[activeImage])}
+                src={
+                  product.images?.length
+                    ? `${API_URL}${product.images[activeImage]}`
+                    : 'https://via.placeholder.com/300x300?text=No+Image'
+                }
                 alt={product.name}
                 className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-300"
               />
@@ -224,7 +229,15 @@ const ProductDetailPage = () => {
                     className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition bg-gray-50 p-1.5 ${i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
-                    <img src={getImageUrl(img)} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-contain" />
+                    <img
+                      src={
+                        img
+                          ? `${API_URL}${img}`
+                          : 'https://via.placeholder.com/300x300?text=No+Image'
+                      }
+                      alt={`Thumbnail ${i + 1}`}
+                      className="w-full h-full object-contain"
+                    />
                   </button>
                 ))}
               </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth, useCart } from '../context/AppContext';
 import { productService } from '../services';
 import logo from '../assets/logo.png';
+import { getImageUrl } from '../utils/helpers.js';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -315,7 +316,7 @@ const Navbar = () => {
                       >
                         <div className="w-16 h-16 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
                           {product.images && product.images[0] ? (
-                            <img src={`http://127.0.0.1:5001${product.images[0]}`} alt={product.name} className="max-w-full max-h-full object-contain p-1" />
+                            <img src={getImageUrl(product.images[0])} alt={product.name} className="max-w-full max-h-full object-contain p-1" />
                           ) : (
                             <FaSearch className="text-gray-300" />
                           )}
