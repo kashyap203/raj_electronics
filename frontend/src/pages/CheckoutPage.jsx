@@ -270,13 +270,6 @@ const CheckoutPage = () => {
                     desc: 'Pay cash when your order is delivered to your doorstep',
                   },
                   {
-                    value: 'Online Payment (Razorpay)',
-                    label: 'Razorpay / Cards / UPI',
-                    icon: FaCreditCard,
-                    badge: 'Popular',
-                    desc: 'Pay securely using Razorpay gateway',
-                  },
-                  {
                     value: 'Online Payment (ICICI)',
                     label: 'ICICI Orange PG',
                     icon: FaShieldAlt,
