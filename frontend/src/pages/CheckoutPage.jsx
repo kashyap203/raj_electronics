@@ -105,7 +105,20 @@ const CheckoutPage = () => {
         return;
       }
 
-      // 3. Online Payment Flow (Razorpay)
+      // 3. Online Payment Flow (Razorpay or ICICI)
+      if (paymentMethod === 'Online Payment (ICICI)') {
+        // ICICI Payment Flow
+        const { data: iciciData } = await paymentService.initiateICICIPayment(createdOrder._id);
+        if (iciciData.success && iciciData.redirectURI) {
+          window.location.href = iciciData.redirectURI;
+        } else {
+          setError('Failed to initiate ICICI payment.');
+          setLoading(false);
+        }
+        return; // Execution stops here due to redirect
+      }
+
+      // Default to Razorpay if not ICICI
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         setError('Failed to load Razorpay SDK. Please check your internet connection.');
@@ -243,10 +256,24 @@ const CheckoutPage = () => {
                     badge: 'Zero Risk',
                     desc: 'Pay cash when your order is delivered to your doorstep',
                   },
+                  {
+                    value: 'Online Payment (Razorpay)',
+                    label: 'Razorpay / Cards / UPI',
+                    icon: FaCreditCard,
+                    badge: 'Popular',
+                    desc: 'Pay securely using Razorpay gateway',
+                  },
+                  {
+                    value: 'Online Payment (ICICI)',
+                    label: 'ICICI Orange PG',
+                    icon: FaShieldAlt,
+                    badge: 'Secure',
+                    desc: 'Pay securely using ICICI Bank Orange Gateway',
+                  },
                 ].map(opt => (
-                  <div key={opt.value} className="rounded-xl border-2 border-primary bg-primary/5 transition overflow-hidden">
+                  <div key={opt.value} className={`rounded-xl border-2 transition overflow-hidden ${paymentMethod === opt.value ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
                     <label className="flex items-start gap-4 p-4 cursor-pointer">
-                      <input type="radio" name="payment" value={opt.value} checked={true} readOnly className="accent-primary mt-1" />
+                      <input type="radio" name="payment" value={opt.value} checked={paymentMethod === opt.value} onChange={(e) => setPaymentMethod(e.target.value)} className="accent-primary mt-1" />
                       <opt.icon className="text-primary" size={22} />
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2">

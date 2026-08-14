@@ -25,12 +25,37 @@ const OrderDetailPage = () => {
   const justPlaced = location.state?.success;
 
   useEffect(() => {
-    orderService
-      .getById(id)
-      .then((r) => setOrder(r.data))
-      .catch(() => setError("Order not found"))
-      .finally(() => setLoading(false));
-  }, [id]);
+    const fetchOrder = async () => {
+      try {
+        const { data } = await orderService.getById(id);
+        setOrder(data);
+        
+        // Check ICICI Status if returning from Gateway or if pending
+        const searchParams = new URLSearchParams(location.search);
+        const isIciciReturn = searchParams.get('icici_payment');
+        
+        if (data && data.paymentDetails?.gateway === 'ICICI_ORANGE_PG' && (isIciciReturn || data.paymentDetails?.paymentStatus === 'PENDING')) {
+          const { paymentService } = await import('../services/index.js');
+          const statusRes = await paymentService.checkICICIPaymentStatus(id);
+          if (statusRes.data && statusRes.data.paymentStatus) {
+            // Re-fetch order to get updated status
+            const updated = await orderService.getById(id);
+            setOrder(updated.data);
+            
+            // Remove query param from URL without reloading
+            if (isIciciReturn) {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          }
+        }
+      } catch (err) {
+        setError("Order not found");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrder();
+  }, [id, location.search]);
 
   const handleCancel = async () => {
     if (!window.confirm("Cancel this order?")) return;
@@ -261,14 +286,19 @@ const OrderDetailPage = () => {
                 Payment ID: {order.paymentDetails.razorpayPaymentId}
               </p>
             )}
+            {order.paymentDetails?.gateway === 'ICICI_ORANGE_PG' && order.paymentDetails?.merchantTxnNo && (
+              <p className="text-xs text-gray-500 mt-1 font-mono">
+                ICICI Txn No: {order.paymentDetails.merchantTxnNo}
+              </p>
+            )}
             <p
               className={`text-sm font-semibold mt-2 flex items-center gap-1.5 ${
-                order.isPaid ? 'text-green-600' : order.paymentDetails?.paymentStatus === 'Failed' ? 'text-red-600' : 'text-amber-600'
+                order.isPaid ? 'text-green-600' : (order.paymentDetails?.paymentStatus === 'Failed' || order.paymentDetails?.paymentStatus === 'FAILED') ? 'text-red-600' : 'text-amber-600'
               }`}
             >
               {order.isPaid
                 ? `✓ Paid on ${new Date(order.paidAt).toLocaleDateString('en-IN')}`
-                : order.paymentDetails?.paymentStatus === 'Failed'
+                : (order.paymentDetails?.paymentStatus === 'Failed' || order.paymentDetails?.paymentStatus === 'FAILED')
                 ? `✗ Payment Failed: ${order.paymentDetails.failureReason || 'Declined'}`
                 : '● Payment Pending'}
             </p>
