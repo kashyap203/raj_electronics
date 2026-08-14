@@ -12,6 +12,10 @@ import {
   deleteProduct,
   createReview,
   getRelatedProducts,
+  getSerialNumbers,
+  addSerialNumber,
+  updateSerialNumber,
+  deleteSerialNumber,
 } from '../controllers/productController.js';
 
 const router = express.Router();
@@ -52,5 +56,11 @@ router.post(
   validate,
   createReview
 );
+
+router.get('/:id/serial-numbers', protect, admin, getSerialNumbers);
+router.post('/:id/serial-numbers', protect, admin, addSerialNumber);
+router.put('/:id/serial-numbers/:snId', protect, admin, updateSerialNumber);
+router.delete('/:id/serial-numbers/:snId', protect, admin, deleteSerialNumber);
+
 
 export default router;

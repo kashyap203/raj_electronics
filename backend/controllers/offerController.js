@@ -1,4 +1,5 @@
 import Offer from '../models/Offer.js';
+import OfferEligibility from '../models/OfferEligibility.js';
 
 // @desc    Get all active offers (Public)
 // @route   GET /api/offers
@@ -29,7 +30,10 @@ export const getAllOffers = async (req, res) => {
 // @access  Private/Admin
 export const createOffer = async (req, res) => {
   try {
-    const { bankName, description, discountType, discountValue, cardType, isActive } = req.body;
+    const { 
+      bankName, description, discountType, discountValue, cardType, isActive,
+      maxDiscountAmount, minTransactionAmount, startDate, endDate
+    } = req.body;
     
     const offer = await Offer.create({
       bankName,
@@ -37,7 +41,11 @@ export const createOffer = async (req, res) => {
       discountType,
       discountValue,
       cardType,
-      isActive
+      isActive,
+      maxDiscountAmount,
+      minTransactionAmount,
+      startDate,
+      endDate
     });
 
     res.status(201).json(offer);
@@ -51,7 +59,10 @@ export const createOffer = async (req, res) => {
 // @access  Private/Admin
 export const updateOffer = async (req, res) => {
   try {
-    const { bankName, description, discountType, discountValue, cardType, isActive } = req.body;
+    const { 
+      bankName, description, discountType, discountValue, cardType, isActive,
+      maxDiscountAmount, minTransactionAmount, startDate, endDate
+    } = req.body;
 
     const offer = await Offer.findById(req.params.id);
 
@@ -62,6 +73,10 @@ export const updateOffer = async (req, res) => {
       offer.discountValue = discountValue !== undefined ? discountValue : offer.discountValue;
       offer.cardType = cardType || offer.cardType;
       offer.isActive = isActive !== undefined ? isActive : offer.isActive;
+      offer.maxDiscountAmount = maxDiscountAmount !== undefined ? maxDiscountAmount : offer.maxDiscountAmount;
+      offer.minTransactionAmount = minTransactionAmount !== undefined ? minTransactionAmount : offer.minTransactionAmount;
+      offer.startDate = startDate || offer.startDate;
+      offer.endDate = endDate || offer.endDate;
 
       const updatedOffer = await offer.save();
       res.json(updatedOffer);
@@ -81,6 +96,7 @@ export const deleteOffer = async (req, res) => {
     const offer = await Offer.findById(req.params.id);
 
     if (offer) {
+      await OfferEligibility.deleteMany({ offer: offer._id });
       await offer.deleteOne();
       res.json({ message: 'Offer removed' });
     } else {
@@ -90,3 +106,6 @@ export const deleteOffer = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+
+

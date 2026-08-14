@@ -125,7 +125,26 @@ const OrdersAdminPage = () => {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-800 line-clamp-1">{item.name}</p>
-                              <p className="text-xs text-gray-500">Qty: {item.quantity} · {formatPrice(item.price)}</p>
+                              <p className="text-xs text-gray-500 mb-1">Qty: {item.quantity} · {formatPrice(item.price)}</p>
+                              {item.serialNumber && !item.serialNumbers && (
+                                <p className="text-[11px] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded inline-block border border-gray-200 mt-1">
+                                  SN: {item.serialNumber.serialNumber}
+                                </p>
+                              )}
+                              {item.serialNumbers && item.serialNumbers.length > 0 && (
+                                <div className="flex gap-1 flex-wrap mt-1">
+                                  {item.serialNumbers.map(sn => (
+                                    <span key={sn._id} className="text-[11px] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
+                                      SN: {sn.serialNumber}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              {item.appliedCreditCardOffer && (
+                                <p className="text-[11px] text-green-700 bg-green-50 px-2 py-0.5 rounded inline-block border border-green-100 mt-1 ml-2">
+                                  {item.appliedCreditCardOffer.bankName} Offer (-{formatPrice(item.creditCardDiscountAmount)})
+                                </p>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -146,7 +165,14 @@ const OrdersAdminPage = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-700 mb-1 text-sm">Summary</h3>
-                        <p className="text-xs text-gray-500">Subtotal: {formatPrice(order.itemsPrice)} · Shipping: {order.shippingPrice === 0 ? 'FREE' : formatPrice(order.shippingPrice)} · Total: {formatPrice(order.total)}</p>
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <p className="flex justify-between"><span>Subtotal:</span> <span>{formatPrice(order.itemsPrice)}</span></p>
+                          <p className="flex justify-between"><span>Shipping:</span> <span>{order.shippingPrice === 0 ? 'FREE' : formatPrice(order.shippingPrice)}</span></p>
+                          {order.creditCardDiscountAmount > 0 && (
+                            <p className="flex justify-between text-green-600"><span>Bank Offer Discount:</span> <span>-{formatPrice(order.creditCardDiscountAmount)}</span></p>
+                          )}
+                          <p className="flex justify-between font-bold text-gray-800 border-t pt-1 mt-1"><span>Total:</span> <span>{formatPrice(order.total)}</span></p>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -5,7 +5,7 @@ import {
   getAllOffers,
   createOffer,
   updateOffer,
-  deleteOffer,
+  deleteOffer
 } from '../controllers/offerController.js';
 
 const router = express.Router();
@@ -19,5 +19,6 @@ router.route('/')
 router.route('/:id')
   .put(protect, admin, updateOffer)
   .delete(protect, admin, deleteOffer);
+
 
 export default router;

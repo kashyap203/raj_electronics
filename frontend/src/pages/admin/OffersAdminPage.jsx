@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaTag } from 'react-icons/fa';
-import { offerService } from '../../services';
-import { Alert, ConfirmDialog } from '../../components/common';
+import { FaPlus, FaEdit, FaTrash, FaTag, FaListOl } from 'react-icons/fa';
+import { offerService, productService } from '../../services';
+import { Alert, ConfirmDialog, Loader } from '../../components/common';
 
 const OffersAdminPage = () => {
   const [offers, setOffers] = useState([]);
@@ -17,6 +17,10 @@ const OffersAdminPage = () => {
     discountValue: '',
     cardType: 'Credit Card',
     isActive: true,
+    maxDiscountAmount: '',
+    minTransactionAmount: '',
+    startDate: '',
+    endDate: '',
   });
 
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, id: null });
@@ -50,13 +54,21 @@ const OffersAdminPage = () => {
       discountValue: '',
       cardType: 'Credit Card',
       isActive: true,
+      maxDiscountAmount: '',
+      minTransactionAmount: '',
+      startDate: '',
+      endDate: '',
     });
     setIsEditing(false);
     setShowModal(true);
   };
 
   const openEditModal = (offer) => {
-    setCurrentOffer(offer);
+    setCurrentOffer({
+      ...offer,
+      startDate: offer.startDate ? new Date(offer.startDate).toISOString().split('T')[0] : '',
+      endDate: offer.endDate ? new Date(offer.endDate).toISOString().split('T')[0] : '',
+    });
     setIsEditing(true);
     setShowModal(true);
   };
@@ -131,10 +143,10 @@ const OffersAdminPage = () => {
                     </span>
                   </td>
                   <td className="p-4 flex gap-2 justify-end">
-                    <button onClick={() => openEditModal(offer)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                    <button onClick={() => openEditModal(offer)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit">
                       <FaEdit />
                     </button>
-                    <button onClick={() => setDeleteDialog({ isOpen: true, id: offer._id })} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                    <button onClick={() => setDeleteDialog({ isOpen: true, id: offer._id })} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
                       <FaTrash />
                     </button>
                   </td>
@@ -187,6 +199,26 @@ const OffersAdminPage = () => {
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
                   <input required type="number" name="discountValue" value={currentOffer.discountValue} onChange={handleInputChange} placeholder="e.g. 1000" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount Amount (₹)</label>
+                  <input required type="number" name="maxDiscountAmount" value={currentOffer.maxDiscountAmount} onChange={handleInputChange} placeholder="e.g. 5000" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Transaction (₹)</label>
+                  <input required type="number" name="minTransactionAmount" value={currentOffer.minTransactionAmount} onChange={handleInputChange} placeholder="e.g. 20000" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                  <input required type="date" name="startDate" value={currentOffer.startDate} onChange={handleInputChange} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                  <input required type="date" name="endDate" value={currentOffer.endDate} onChange={handleInputChange} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
                 </div>
               </div>
               <div className="flex items-center gap-2 pt-2">

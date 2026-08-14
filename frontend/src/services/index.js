@@ -21,6 +21,11 @@ export const productService = {
   update: (id, data) => api.put(`/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id) => api.delete(`/products/${id}`),
   addReview: (id, data) => api.post(`/products/${id}/reviews`, data),
+  getSerialNumbers: (id) => api.get(`/products/${id}/serial-numbers`),
+  addSerialNumber: (id, data) => api.post(`/products/${id}/serial-numbers`, data),
+  updateSerialNumber: (id, snId, data) => api.put(`/products/${id}/serial-numbers/${snId}`, data),
+  deleteSerialNumber: (id, snId) => api.delete(`/products/${id}/serial-numbers/${snId}`),
+  getAvailableOffers: (id) => api.get(`/products/${id}/available-offers`),
 };
 
 export const categoryService = {
@@ -41,7 +46,7 @@ export const brandService = {
 
 export const cartService = {
   get: () => api.get('/cart'),
-  add: (productId, quantity = 1) => api.post('/cart', { productId, quantity }),
+  add: (productId, quantity = 1, offerId) => api.post('/cart', { productId, quantity, offerId }),
   update: (productId, quantity) => api.put(`/cart/${productId}`, { quantity }),
   remove: (productId) => api.delete(`/cart/${productId}`),
   clear: () => api.delete('/cart'),
@@ -95,6 +100,9 @@ export const offerService = {
   create: (data) => api.post('/offers', data),
   update: (id, data) => api.put(`/offers/${id}`, data),
   delete: (id) => api.delete(`/offers/${id}`),
+  getOfferSerialNumbers: (id) => api.get(`/offers/${id}/serial-numbers`),
+  assignSerialNumbers: (id, data) => api.post(`/offers/${id}/serial-numbers`, data),
+  removeSerialNumberFromOffer: (id, snId) => api.delete(`/offers/${id}/serial-numbers/${snId}`),
 };
 
 export const sliderService = {

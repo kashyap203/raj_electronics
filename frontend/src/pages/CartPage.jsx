@@ -9,23 +9,34 @@ const CartPage = () => {
   const navigate = useNavigate();
 
   const items = cart.items || [];
-  const appliedOffer = cart.appliedOffer;
 
   const subtotal = items.reduce((acc, item) => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
     return acc + price * item.quantity;
   }, 0);
 
-  let offerDiscount = 0;
-  if (appliedOffer) {
-    if (appliedOffer.discountType === 'amount') {
-      offerDiscount = appliedOffer.discountValue;
-    } else {
-      offerDiscount = (subtotal * appliedOffer.discountValue) / 100;
+  let totalOfferDiscount = 0;
+  items.forEach(item => {
+    if (!item.product) return;
+    const price = getDiscountedPrice(item.product.price, item.product.discount);
+    const itemSubtotal = price * item.quantity;
+    
+    if (item.appliedOffer) {
+       const offer = item.appliedOffer;
+       if (itemSubtotal >= (offer.minTransactionAmount || 0)) {
+         let discount = 0;
+         if (offer.discountType === 'amount') {
+           discount = offer.discountValue;
+         } else {
+           discount = (itemSubtotal * offer.discountValue) / 100;
+         }
+         discount = Math.min(discount, offer.maxDiscountAmount || Infinity);
+         totalOfferDiscount += discount;
+       }
     }
-  }
+  });
 
-  const finalTotal = Math.max(0, subtotal - offerDiscount);
+  const finalTotal = Math.max(0, subtotal - totalOfferDiscount);
   const shippingText = "Calculated at checkout";
   const totalText = "Calculated at checkout";
 
@@ -114,10 +125,10 @@ const CartPage = () => {
                 <span>Shipping</span>
                 <span className="text-xs text-gray-500 mt-1">{shippingText}</span>
               </div>
-              {offerDiscount > 0 && (
+              {totalOfferDiscount > 0 && (
                 <div className="flex justify-between text-green-600 font-medium">
-                  <span>Bank Offer Applied</span>
-                  <span>- {formatPrice(offerDiscount)}</span>
+                  <span>Bank Offers Applied</span>
+                  <span>- {formatPrice(totalOfferDiscount)}</span>
                 </div>
               )}
               <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-base text-gray-800">

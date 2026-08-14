@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, FaImage } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, FaListOl, FaImage } from 'react-icons/fa';
 import { productService, categoryService, brandService, offerService } from '../../services';
 import { Loader, Alert, Pagination } from '../../components/common';
-import { formatPrice, getDiscountedPrice, getImageUrl } from '../../utils/helpers';
+import { formatPrice, getImageUrl, getDiscountedPrice } from '../../utils/helpers';
 
 const EMPTY_FORM = {
-  name: '', brand: '', category: '', price: '', discount: '0', stock: '',
+  name: '', brand: '', category: '', price: '', stock: '',
   description: '', featured: false, bestSelling: false,
   specifications: '', features: '', offers: [],
 };
@@ -27,7 +28,22 @@ const ProductsAdminPage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const fileRef = useRef();
+  const fileRef = useRef(null);
+
+  const fetchInitialData = async () => {
+    try {
+      const [catRes, brandRes, offRes] = await Promise.all([
+        categoryService.getAll(),
+        brandService.getAll(),
+        offerService.getActive(),
+      ]);
+      setCategories(catRes.data);
+      setBrands(brandRes.data);
+      setAllOffers(offRes.data);
+    } catch (err) {
+      setError('Failed to load form data');
+    }
+  };
 
   const fetchProducts = async (p = 1) => {
     setLoading(true);
@@ -42,9 +58,8 @@ const ProductsAdminPage = () => {
   };
 
   useEffect(() => {
-    categoryService.getAll().then(r => setCategories(r.data));
-    brandService.getAll().then(r => setBrands(r.data));
-    offerService.getActive().then(r => setAllOffers(r.data));
+    fetchInitialData();
+    fetchProducts();
   }, []);
 
   useEffect(() => { fetchProducts(); }, [search]);
@@ -52,12 +67,12 @@ const ProductsAdminPage = () => {
   const openCreate = () => { setEditing(null); setForm(EMPTY_FORM); setImages([]); setExistingImages([]); setShowModal(true); };
   const openEdit = (p) => {
     setEditing(p);
-    const specs = p.specifications ? Object.entries(p.specifications).map(([k, v]) => `${k}: ${v}`).join('\n') : '';
+    const specs = p.specifications && typeof p.specifications === 'object' ? Object.entries(p.specifications).map(([k, v]) => `${k}: ${v}`).join('\n') : '';
     setForm({
       name: p.name, brand: p.brand?._id || '', category: p.category?._id || '',
-      price: p.price, discount: p.discount, stock: p.stock,
+      price: p.price, stock: p.stock,
       description: p.description, featured: p.featured, bestSelling: p.bestSelling,
-      specifications: specs, features: p.features?.join('\n') || '',
+      specifications: specs, features: Array.isArray(p.features) ? p.features.join('\n') : '',
       offers: p.offers?.map(o => (typeof o === 'string' ? o : o._id)) || [],
     });
     setExistingImages(p.images || []);
@@ -182,8 +197,11 @@ const ProductsAdminPage = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <button onClick={() => openEdit(p)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition"><FaEdit size={14} /></button>
-                        <button onClick={() => handleDelete(p._id)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition"><FaTrash size={14} /></button>
+                        <Link to={`/admin/products/${p._id}/serial-numbers`} className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg transition" title="Manage Serial Numbers">
+                          <FaListOl size={14} />
+                        </Link>
+                        <button onClick={() => openEdit(p)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="Edit"><FaEdit size={14} /></button>
+                        <button onClick={() => handleDelete(p._id)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition" title="Delete"><FaTrash size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -236,11 +254,6 @@ const ProductsAdminPage = () => {
                     className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Discount (%)</label>
-                  <input type="number" min="0" max="100" value={form.discount} onChange={e => setForm(f => ({ ...f, discount: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
-                </div>
-                <div>
                   <label className="block text-sm font-medium mb-1">Stock*</label>
                   <input required type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))}
                     className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
@@ -273,7 +286,7 @@ const ProductsAdminPage = () => {
                     className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none" />
                 </div>
 
-                {/* <div className="sm:col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-sm font-medium mb-2">Available Bank Offers</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 max-h-40 overflow-y-auto">
                     {allOffers.length > 0 ? allOffers.map(offer => (
@@ -290,13 +303,13 @@ const ProductsAdminPage = () => {
                             }
                           }}
                         />
-                        <span className="truncate">{offer.bankName} - {offer.title}</span>
+                        <span className="truncate">{offer.bankName} - {offer.discountType === 'percentage' ? `${offer.discountValue}%` : `₹${offer.discountValue}`} off</span>
                       </label>
                     )) : (
                       <p className="text-xs text-gray-500">No active offers available</p>
                     )}
                   </div>
-                </div> */}
+                </div>
               </div>
 
               {/* Images */}

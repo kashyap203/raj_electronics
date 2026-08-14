@@ -29,6 +29,22 @@ const offerSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    maxDiscountAmount: {
+      type: Number,
+      required: true,
+    },
+    minTransactionAmount: {
+      type: Number,
+      required: true,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
   },
   { timestamps: true }
 );

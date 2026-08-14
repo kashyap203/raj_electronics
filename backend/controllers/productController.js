@@ -1,6 +1,8 @@
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import Brand from '../models/Brand.js';
+import ProductSerialNumber from '../models/ProductSerialNumber.js';
+import OfferEligibility from '../models/OfferEligibility.js';
 import slugify from '../utils/slugify.js';
 
 const buildProductQuery = async (query) => {
@@ -312,3 +314,90 @@ export const getRelatedProducts = async (req, res) => {
 
   res.json(related);
 };
+
+// --- Serial Number Management ---
+
+export const getSerialNumbers = async (req, res) => {
+  const serialNumbers = await ProductSerialNumber.find({ product: req.params.id }).sort({ createdAt: -1 });
+  res.json(serialNumbers);
+};
+
+export const addSerialNumber = async (req, res) => {
+  const { serialNumber, discount } = req.body;
+  const product = await Product.findById(req.params.id);
+  if (!product) {
+    return res.status(404).json({ message: 'Product not found' });
+  }
+
+  const existing = await ProductSerialNumber.findOne({ serialNumber });
+  if (existing) {
+    return res.status(400).json({ message: 'Serial number already exists' });
+  }
+
+  const sn = await ProductSerialNumber.create({
+    product: req.params.id,
+    serialNumber,
+    discount: Number(discount) || 0,
+    status: 'Available',
+  });
+
+  // Update product stock based on available serial numbers
+  const availableCount = await ProductSerialNumber.countDocuments({ product: req.params.id, status: 'Available' });
+  product.stock = availableCount;
+  await product.save();
+
+  res.status(201).json(sn);
+};
+
+export const deleteSerialNumber = async (req, res) => {
+  const sn = await ProductSerialNumber.findById(req.params.snId);
+  if (!sn) {
+    return res.status(404).json({ message: 'Serial number not found' });
+  }
+
+  if (sn.status === 'Sold') {
+    return res.status(400).json({ message: 'Cannot delete a sold serial number' });
+  }
+
+  const productId = sn.product;
+  await sn.deleteOne();
+  
+  // Cleanup offer eligibility mappings
+  await OfferEligibility.deleteMany({ serialNumber: sn._id });
+
+  // Update stock
+  const availableCount = await ProductSerialNumber.countDocuments({ product: productId, status: 'Available' });
+  const product = await Product.findById(productId);
+  if (product) {
+    product.stock = availableCount;
+    await product.save();
+  }
+
+  res.json({ message: 'Serial number removed' });
+};
+
+export const updateSerialNumber = async (req, res) => {
+  const { serialNumber, discount } = req.body;
+  const sn = await ProductSerialNumber.findById(req.params.snId);
+  if (!sn) {
+    return res.status(404).json({ message: 'Serial number not found' });
+  }
+
+  // If changing the serial number string, check for uniqueness
+  if (serialNumber && serialNumber !== sn.serialNumber) {
+    const existing = await ProductSerialNumber.findOne({ serialNumber });
+    if (existing) {
+      return res.status(400).json({ message: 'Serial number already exists' });
+    }
+    sn.serialNumber = serialNumber;
+  }
+
+  if (discount !== undefined) {
+    sn.discount = Number(discount) || 0;
+  }
+
+  await sn.save();
+  res.json(sn);
+};
+
+

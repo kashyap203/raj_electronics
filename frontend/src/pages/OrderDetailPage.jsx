@@ -246,6 +246,12 @@ const OrderDetailPage = () => {
                     : formatPrice(order.shippingPrice)}
                 </span>
               </div>
+              {order.creditCardDiscountAmount > 0 && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>Bank Offers Applied</span>
+                  <span>-{formatPrice(order.creditCardDiscountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-gray-800 text-base border-t border-gray-200 pt-2">
                 <span>Total</span>
                 <span>{formatPrice(order.total)}</span>

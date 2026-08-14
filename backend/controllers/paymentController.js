@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import ProductSerialNumber from '../models/ProductSerialNumber.js';
 import { createRazorpayOrder, verifyPaymentSignature } from '../services/paymentService.js';
 import { sendOrderStatusNotification } from '../utils/notificationService.js';
 
@@ -98,6 +99,12 @@ export const verifyPayment = async (req, res) => {
 
     await order.save();
 
+    // Mark serial numbers as Sold
+    await ProductSerialNumber.updateMany(
+      { order: order._id },
+      { $set: { status: 'Sold', reservedUntil: null } }
+    );
+
     // Trigger Order Confirmation Notification
     sendOrderStatusNotification(order, 'Confirmed');
 
@@ -132,6 +139,12 @@ export const handlePaymentFailure = async (req, res) => {
       failureReason: reason || 'Payment was cancelled or failed at checkout',
     };
     await order.save();
+
+    // Release reserved serial numbers
+    await ProductSerialNumber.updateMany(
+      { order: order._id, status: 'Reserved' },
+      { $set: { status: 'Available', reservedUntil: null, order: null } }
+    );
 
     res.json({
       success: false,

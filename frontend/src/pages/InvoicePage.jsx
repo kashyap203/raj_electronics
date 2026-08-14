@@ -113,6 +113,12 @@ const InvoicePage = () => {
                     <td className="py-4 px-4">
                       <p className="font-medium text-gray-800 text-sm">{item.name}</p>
                       {item.discount > 0 && <p className="text-xs text-gray-500">Includes {item.discount}% discount</p>}
+                      {item.serialNumber && !item.serialNumbers && (
+                        <p className="text-xs text-gray-500 mt-1">SN: {item.serialNumber.serialNumber || item.serialNumber}</p>
+                      )}
+                      {item.serialNumbers && item.serialNumbers.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">SN: {item.serialNumbers.map(sn => sn.serialNumber || sn).join(', ')}</p>
+                      )}
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-700 text-right">{item.quantity}</td>
                     <td className="py-4 px-4 text-sm text-gray-700 text-right">{formatPrice(unitPrice)}</td>

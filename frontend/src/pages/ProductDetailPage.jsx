@@ -49,14 +49,17 @@ const ProductDetailPage = () => {
     setLoading(true);
     setActiveImage(0);
     setCartSuccess(false);
-    Promise.all([productService.getById(id), productService.getRelated(id)])
+    Promise.all([
+      productService.getById(id), 
+      productService.getRelated(id)
+    ])
       .then(([p, r]) => {
         setProduct(p.data);
         setRelated(r.data);
       })
-      .catch(() => navigate('/products'))
+      .catch((err) => console.error(err))
       .finally(() => setLoading(false));
-  }, [id, navigate]);
+  }, [id]);
 
   if (loading) return <Loader />;
   if (!product) return null;
@@ -80,9 +83,11 @@ const ProductDetailPage = () => {
     if (!user) return navigate('/login');
     setCartLoading(true);
     try {
-      await addToCart(product._id, quantity);
+      await addToCart(product._id, quantity, appliedOffer?._id);
       setCartSuccess(true);
       setTimeout(() => setCartSuccess(false), 3000);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error adding to cart');
     } finally {
       setCartLoading(false);
     }
@@ -92,9 +97,10 @@ const ProductDetailPage = () => {
     if (!user) return navigate('/login');
     setCartLoading(true);
     try {
-      await addToCart(product._id, quantity);
+      await addToCart(product._id, quantity, appliedOffer?._id);
       navigate('/cart');
-    } finally {
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error adding to cart');
       setCartLoading(false);
     }
   };
@@ -290,16 +296,13 @@ const ProductDetailPage = () => {
               <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes. Free doorstep installation on selected electronics.</p>
             </div>
 
-            {/* <BankOffers
+            {/* Bank Offers (if any attached to product) */}
+            <BankOffers
               price={baseDiscountedPrice}
-              onApplyOffer={async (offer) => {
-                if (!user) return navigate('/login');
-                setAppliedOffer(offer);
-                await applyOfferToCart(offer ? offer._id : null);
-              }}
+              onApplyOffer={(offer) => setAppliedOffer(offer)}
               appliedOffer={appliedOffer}
-              offers={product.offers}
-            /> */}
+              offers={product.offers || []}
+            />
 
             {/* Product Overview Highlights Table */}
             {quickSpecs.length > 0 && (

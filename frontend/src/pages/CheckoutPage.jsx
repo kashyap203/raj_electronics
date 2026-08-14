@@ -39,20 +39,33 @@ const CheckoutPage = () => {
   const [couponDiscount, setCouponDiscount] = useState(0);
 
   const items = cart.items || [];
-  const appliedOffer = cart.appliedOffer;
   const subtotal = items.reduce((acc, item) => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
     return acc + price * item.quantity;
   }, 0);
 
-  let offerDiscount = 0;
-  if (appliedOffer) {
-    if (appliedOffer.discountType === 'amount') {
-      offerDiscount = appliedOffer.discountValue;
-    } else {
-      offerDiscount = (subtotal * appliedOffer.discountValue) / 100;
+  let totalOfferDiscount = 0;
+  const isOnlinePayment = paymentMethod !== 'Cash on Delivery';
+
+  items.forEach(item => {
+    if (!item.product) return;
+    const price = getDiscountedPrice(item.product.price, item.product.discount);
+    const itemSubtotal = price * item.quantity;
+    
+    if (item.appliedOffer && isOnlinePayment) {
+       const offer = item.appliedOffer;
+       if (itemSubtotal >= (offer.minTransactionAmount || 0)) {
+         let discount = 0;
+         if (offer.discountType === 'amount') {
+           discount = offer.discountValue;
+         } else {
+           discount = (itemSubtotal * offer.discountValue) / 100;
+         }
+         discount = Math.min(discount, offer.maxDiscountAmount || Infinity);
+         totalOfferDiscount += discount;
+       }
     }
-  }
+  });
   const [deliveryCities, setDeliveryCities] = useState([]);
   
   useEffect(() => {
@@ -63,7 +76,7 @@ const CheckoutPage = () => {
     c => c.cityName.toLowerCase() === address.city.trim().toLowerCase()
   );
   const shipping = address.city ? (isFreeDelivery ? 0 : 99) : 99;
-  const total = Math.max(0, subtotal - couponDiscount - offerDiscount) + shipping;
+  const total = Math.max(0, subtotal - couponDiscount - totalOfferDiscount) + shipping;
 
   const applyCoupon = () => {
     if (couponCode.trim().toUpperCase() === 'DISCOUNT10') {
@@ -352,10 +365,15 @@ const CheckoutPage = () => {
                     <span>-{formatPrice(couponDiscount)}</span>
                   </div>
                 )}
-                {offerDiscount > 0 && (
+                {totalOfferDiscount > 0 && (
                   <div className="flex justify-between text-green-600 font-medium">
-                    <span>Bank Offer Applied</span>
-                    <span>-{formatPrice(offerDiscount)}</span>
+                    <span>Bank Offers Applied</span>
+                    <span>-{formatPrice(totalOfferDiscount)}</span>
+                  </div>
+                )}
+                {!isOnlinePayment && items.some(i => i.appliedOffer) && (
+                  <div className="text-red-500 text-xs mt-1">
+                    Bank offers are not applicable for Cash on Delivery.
                   </div>
                 )}
                 <div className="flex justify-between text-gray-600">

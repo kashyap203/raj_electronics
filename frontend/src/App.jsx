@@ -45,6 +45,7 @@ import UsersAdminPage from './pages/admin/UsersAdminPage';
 import AdminDeliveryCities from './pages/admin/AdminDeliveryCities';
 import OffersAdminPage from './pages/admin/OffersAdminPage';
 import AdminSliders from './pages/admin/AdminSliders';
+import ProductSerialNumbers from './pages/admin/ProductSerialNumbers';
 
 function App() {
   return (
@@ -84,6 +85,7 @@ function App() {
             <Route path="/admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>
               <Route index element={<DashboardPage />} />
               <Route path="products" element={<ProductsAdminPage />} />
+              <Route path="products/:id/serial-numbers" element={<ProductSerialNumbers />} />
               <Route path="categories" element={<CategoriesAdminPage />} />
               <Route path="brands" element={<BrandsAdminPage />} />
               <Route path="orders" element={<OrdersAdminPage />} />
