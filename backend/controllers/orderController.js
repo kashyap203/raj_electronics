@@ -14,8 +14,11 @@ export const createOrder = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  try {
-    const cart = await Cart.findOne({ user: req.user._id }).populate('items.appliedOffer').session(session);
+    try {
+    const cart = await Cart.findOne({ user: req.user._id })
+      .populate('items.appliedOffer')
+      .populate('items.appliedBankDiscount')
+      .session(session);
     
     if (!cart || cart.items.length === 0) {
       await session.abortTransaction();
@@ -35,7 +38,6 @@ export const createOrder = async (req, res) => {
         throw new Error(`Product not found: ${item.product}`);
       }
       
-      // Stock is now purely managed by available serial numbers, but we will decrement the counter.
       if (product.stock < item.quantity) {
         throw new Error(`Insufficient stock for ${product.name}`);
       }
@@ -46,11 +48,12 @@ export const createOrder = async (req, res) => {
 
       let itemDiscount = 0;
       let appliedOfferId = null;
+      let appliedBankDiscountId = null;
       let assignedSerialNumbers = [];
 
-      // Check if offer is still valid and payment method supports it
+      // Check legacy offer
       if (item.appliedOffer && isOnline) {
-        const offer = item.appliedOffer; // populated
+        const offer = item.appliedOffer; 
         if (!offer.isActive || new Date(offer.startDate) > new Date() || new Date(offer.endDate) < new Date()) {
           throw new Error(`Offer ${offer.bankName} is no longer valid`);
         }
@@ -69,6 +72,31 @@ export const createOrder = async (req, res) => {
         itemDiscount = discountAmount;
         totalCreditCardDiscount += discountAmount;
         appliedOfferId = offer._id;
+      }
+      // Check new ProductBankDiscount
+      else if (item.appliedBankDiscount && isOnline) {
+        const bankDiscount = item.appliedBankDiscount;
+        if (!bankDiscount.isActive) {
+          throw new Error(`Bank discount ${bankDiscount.bankName} is no longer active`);
+        }
+        if (bankDiscount.minTransactionAmount && itemSubtotal < bankDiscount.minTransactionAmount) {
+           throw new Error(`Minimum transaction of ${bankDiscount.minTransactionAmount} not met for this bank discount`);
+        }
+
+        let discountAmount = 0;
+        if (bankDiscount.discountType === 'percentage') {
+          discountAmount = (itemSubtotal * bankDiscount.discountValue) / 100;
+        } else {
+          discountAmount = bankDiscount.discountValue;
+        }
+        
+        if (bankDiscount.maxDiscountAmount) {
+          discountAmount = Math.min(discountAmount, bankDiscount.maxDiscountAmount);
+        }
+
+        itemDiscount = discountAmount;
+        totalCreditCardDiscount += discountAmount;
+        appliedBankDiscountId = bankDiscount._id;
       }
 
       if (item.selectedSerialNumber) {
@@ -100,7 +128,7 @@ export const createOrder = async (req, res) => {
           sn.status = 'Reserved';
           sn.reservedUntil = new Date(Date.now() + 3 * 60 * 1000); // 3 mins
         } else {
-          sn.status = 'Reserved'; // COD items stay reserved until delivered
+          sn.status = 'Reserved'; 
         }
         await sn.save({ session });
       }
@@ -114,6 +142,7 @@ export const createOrder = async (req, res) => {
         quantity: item.quantity,
         serialNumbers: assignedSerialNumbers.map(sn => sn._id),
         appliedCreditCardOffer: appliedOfferId,
+        appliedBankDiscount: appliedBankDiscountId,
         creditCardDiscountAmount: itemDiscount,
       });
 
@@ -194,7 +223,8 @@ export const getOrderById = async (req, res) => {
     .populate('products.product', 'name images slug brand category')
     .populate('products.serialNumber', 'serialNumber status')
     .populate('products.serialNumbers', 'serialNumber status')
-    .populate('products.appliedCreditCardOffer', 'bankName discountType discountValue');
+    .populate('products.appliedCreditCardOffer')
+    .populate({ path: 'products.appliedBankDiscount', populate: { path: 'bank' } });
 
   if (!order) {
     return res.status(404).json({ message: 'Order not found' });
@@ -266,7 +296,8 @@ export const getAllOrders = async (req, res) => {
     .populate('products.product', 'name images')
     .populate('products.serialNumber', 'serialNumber status')
     .populate('products.serialNumbers', 'serialNumber status')
-    .populate('products.appliedCreditCardOffer', 'bankName discountType discountValue')
+    .populate('products.appliedCreditCardOffer')
+    .populate({ path: 'products.appliedBankDiscount', populate: { path: 'bank' } })
     .sort({ createdAt: -1 });
 
   res.json(orders);

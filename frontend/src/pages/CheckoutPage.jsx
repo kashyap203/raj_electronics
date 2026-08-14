@@ -64,6 +64,22 @@ const CheckoutPage = () => {
          discount = Math.min(discount, offer.maxDiscountAmount || Infinity);
          totalOfferDiscount += discount;
        }
+    } else if (item.appliedBankDiscount && isOnlinePayment) {
+       const bankDiscount = item.appliedBankDiscount;
+       if (bankDiscount.isActive) {
+         if (!bankDiscount.minTransactionAmount || itemSubtotal >= bankDiscount.minTransactionAmount) {
+           let discount = 0;
+           if (bankDiscount.discountType === 'amount') {
+             discount = bankDiscount.discountValue;
+           } else {
+             discount = (itemSubtotal * bankDiscount.discountValue) / 100;
+           }
+           if (bankDiscount.maxDiscountAmount) {
+             discount = Math.min(discount, bankDiscount.maxDiscountAmount);
+           }
+           totalOfferDiscount += discount;
+         }
+       }
     }
   });
   const [deliveryCities, setDeliveryCities] = useState([]);

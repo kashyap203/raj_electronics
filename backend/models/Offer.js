@@ -7,23 +7,23 @@ const offerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    logo: {
+      type: String,
+      default: '',
+    },
     description: {
       type: String,
-      required: true,
     },
     discountType: {
       type: String,
-      required: true,
       enum: ['amount', 'percentage'],
       default: 'amount',
     },
     discountValue: {
       type: Number,
-      required: true,
     },
     cardType: {
       type: String,
-      required: true,
     },
     isActive: {
       type: Boolean,
@@ -31,19 +31,15 @@ const offerSchema = new mongoose.Schema(
     },
     maxDiscountAmount: {
       type: Number,
-      required: true,
     },
     minTransactionAmount: {
       type: Number,
-      required: true,
     },
     startDate: {
       type: Date,
-      required: true,
     },
     endDate: {
       type: Date,
-      required: true,
     },
   },
   { timestamps: true }

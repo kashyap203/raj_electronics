@@ -35,8 +35,14 @@ export const createOffer = async (req, res) => {
       maxDiscountAmount, minTransactionAmount, startDate, endDate
     } = req.body;
     
+    let logo = '';
+    if (req.file) {
+      logo = `/uploads/${req.file.filename}`;
+    }
+
     const offer = await Offer.create({
       bankName,
+      logo,
       description,
       discountType,
       discountValue,
@@ -68,6 +74,9 @@ export const updateOffer = async (req, res) => {
 
     if (offer) {
       offer.bankName = bankName || offer.bankName;
+      if (req.file) {
+        offer.logo = `/uploads/${req.file.filename}`;
+      }
       offer.description = description || offer.description;
       offer.discountType = discountType || offer.discountType;
       offer.discountValue = discountValue !== undefined ? discountValue : offer.discountValue;

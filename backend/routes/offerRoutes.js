@@ -8,16 +8,18 @@ import {
   deleteOffer
 } from '../controllers/offerController.js';
 
+import { upload } from '../middleware/uploadMiddleware.js';
+
 const router = express.Router();
 
 router.get('/', getActiveOffers); // Public
 router.get('/all', protect, admin, getAllOffers); // Admin
 
 router.route('/')
-  .post(protect, admin, createOffer);
+  .post(protect, admin, upload.single('logo'), createOffer);
 
 router.route('/:id')
-  .put(protect, admin, updateOffer)
+  .put(protect, admin, upload.single('logo'), updateOffer)
   .delete(protect, admin, deleteOffer);
 
 

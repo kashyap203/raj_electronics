@@ -12,15 +12,9 @@ const OffersAdminPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentOffer, setCurrentOffer] = useState({
     bankName: '',
-    description: '',
-    discountType: 'amount',
-    discountValue: '',
-    cardType: 'Credit Card',
+    logo: null,
+    logoPreview: '',
     isActive: true,
-    maxDiscountAmount: '',
-    minTransactionAmount: '',
-    startDate: '',
-    endDate: '',
   });
 
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, id: null });
@@ -49,15 +43,9 @@ const OffersAdminPage = () => {
   const openAddModal = () => {
     setCurrentOffer({
       bankName: '',
-      description: '',
-      discountType: 'amount',
-      discountValue: '',
-      cardType: 'Credit Card',
+      logo: null,
+      logoPreview: '',
       isActive: true,
-      maxDiscountAmount: '',
-      minTransactionAmount: '',
-      startDate: '',
-      endDate: '',
     });
     setIsEditing(false);
     setShowModal(true);
@@ -66,8 +54,7 @@ const OffersAdminPage = () => {
   const openEditModal = (offer) => {
     setCurrentOffer({
       ...offer,
-      startDate: offer.startDate ? new Date(offer.startDate).toISOString().split('T')[0] : '',
-      endDate: offer.endDate ? new Date(offer.endDate).toISOString().split('T')[0] : '',
+      logoPreview: offer.logo ? `http://localhost:5000${offer.logo}` : '',
     });
     setIsEditing(true);
     setShowModal(true);
@@ -76,10 +63,17 @@ const OffersAdminPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const formData = new FormData();
+      formData.append('bankName', currentOffer.bankName);
+      formData.append('isActive', currentOffer.isActive);
+      if (currentOffer.logo) {
+        formData.append('logo', currentOffer.logo);
+      }
+
       if (isEditing) {
-        await offerService.update(currentOffer._id, currentOffer);
+        await offerService.update(currentOffer._id, formData);
       } else {
-        await offerService.create(currentOffer);
+        await offerService.create(formData);
       }
       setShowModal(false);
       fetchOffers();
@@ -119,9 +113,8 @@ const OffersAdminPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-gray-600 text-sm">
-                <th className="p-4 font-medium">Bank & Card</th>
-                <th className="p-4 font-medium">Description</th>
-                <th className="p-4 font-medium">Discount</th>
+                <th className="p-4 font-medium">Bank Logo</th>
+                <th className="p-4 font-medium">Bank Name</th>
                 <th className="p-4 font-medium">Status</th>
                 <th className="p-4 font-medium text-right">Actions</th>
               </tr>
@@ -130,12 +123,14 @@ const OffersAdminPage = () => {
               {offers.map(offer => (
                 <tr key={offer._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
                   <td className="p-4">
-                    <p className="font-semibold text-gray-800">{offer.bankName}</p>
-                    <p className="text-xs text-gray-500">{offer.cardType}</p>
+                    {offer.logo ? (
+                      <img src={`http://localhost:5000${offer.logo}`} alt={offer.bankName} className="h-10 object-contain" />
+                    ) : (
+                      <div className="h-10 w-10 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">No Image</div>
+                    )}
                   </td>
-                  <td className="p-4 text-gray-600 max-w-xs truncate">{offer.description}</td>
-                  <td className="p-4 font-medium text-gray-800">
-                    {offer.discountType === 'percentage' ? `${offer.discountValue}%` : `₹${offer.discountValue}`}
+                  <td className="p-4">
+                    <p className="font-semibold text-gray-800">{offer.bankName}</p>
                   </td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${offer.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
@@ -175,51 +170,11 @@ const OffersAdminPage = () => {
                 <input required type="text" name="bankName" value={currentOffer.bankName} onChange={handleInputChange} placeholder="e.g. HDFC Bank" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Card Type</label>
-                <select name="cardType" value={currentOffer.cardType} onChange={handleInputChange} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm">
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="Debit Card">Debit Card</option>
-                  <option value="Credit & Debit Cards">Credit & Debit Cards</option>
-                  <option value="Net Banking">Net Banking</option>
-                  <option value="UPI">UPI</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <input required type="text" name="description" value={currentOffer.description} onChange={handleInputChange} placeholder="e.g. 10% off up to ₹1,000 on EMI" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
-                  <select name="discountType" value={currentOffer.discountType} onChange={handleInputChange} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm">
-                    <option value="amount">Flat Amount (₹)</option>
-                    <option value="percentage">Percentage (%)</option>
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                  <input required type="number" name="discountValue" value={currentOffer.discountValue} onChange={handleInputChange} placeholder="e.g. 1000" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount Amount (₹)</label>
-                  <input required type="number" name="maxDiscountAmount" value={currentOffer.maxDiscountAmount} onChange={handleInputChange} placeholder="e.g. 5000" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Transaction (₹)</label>
-                  <input required type="number" name="minTransactionAmount" value={currentOffer.minTransactionAmount} onChange={handleInputChange} placeholder="e.g. 20000" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                  <input required type="date" name="startDate" value={currentOffer.startDate} onChange={handleInputChange} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                  <input required type="date" name="endDate" value={currentOffer.endDate} onChange={handleInputChange} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-sm" />
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bank Logo (Image)</label>
+                <input type="file" name="logo" accept="image/*" onChange={(e) => setCurrentOffer(prev => ({ ...prev, logo: e.target.files[0] }))} className="w-full border border-gray-300 rounded-xl px-4 py-2 outline-none text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                {currentOffer.logoPreview && (
+                  <img src={currentOffer.logoPreview} alt="Logo Preview" className="mt-2 h-10 object-contain rounded" />
+                )}
               </div>
               <div className="flex items-center gap-2 pt-2">
                 <input type="checkbox" name="isActive" id="isActive" checked={currentOffer.isActive} onChange={handleInputChange} className="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer" />
@@ -227,7 +182,7 @@ const OffersAdminPage = () => {
               </div>
               <div className="pt-4 border-t border-gray-100 flex gap-3">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition">Save Offer</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition">Save Bank</button>
               </div>
             </form>
           </div>

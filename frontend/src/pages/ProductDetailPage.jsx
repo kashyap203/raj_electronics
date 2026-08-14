@@ -83,7 +83,11 @@ const ProductDetailPage = () => {
     if (!user) return navigate('/login');
     setCartLoading(true);
     try {
-      await addToCart(product._id, quantity, appliedOffer?._id);
+      const isBankDiscount = appliedOffer && appliedOffer.product;
+      const offerId = isBankDiscount ? null : appliedOffer?._id;
+      const bankDiscountId = isBankDiscount ? appliedOffer._id : null;
+
+      await addToCart(product._id, quantity, offerId, bankDiscountId);
       setCartSuccess(true);
       setTimeout(() => setCartSuccess(false), 3000);
     } catch (err) {
@@ -97,7 +101,11 @@ const ProductDetailPage = () => {
     if (!user) return navigate('/login');
     setCartLoading(true);
     try {
-      await addToCart(product._id, quantity, appliedOffer?._id);
+      const isBankDiscount = appliedOffer && appliedOffer.product;
+      const offerId = isBankDiscount ? null : appliedOffer?._id;
+      const bankDiscountId = isBankDiscount ? appliedOffer._id : null;
+
+      await addToCart(product._id, quantity, offerId, bankDiscountId);
       navigate('/cart');
     } catch (err) {
       alert(err.response?.data?.message || 'Error adding to cart');
@@ -301,7 +309,7 @@ const ProductDetailPage = () => {
               price={baseDiscountedPrice}
               onApplyOffer={(offer) => setAppliedOffer(offer)}
               appliedOffer={appliedOffer}
-              offers={product.offers || []}
+              offers={[...(product.bankDiscounts || []), ...(product.offers || [])]}
             />
 
             {/* Product Overview Highlights Table */}

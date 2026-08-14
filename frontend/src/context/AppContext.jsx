@@ -100,8 +100,8 @@ export const CartProvider = ({ children }) => {
     fetchWishlist();
   }, [fetchCart, fetchWishlist]);
 
-  const addToCart = async (productId, quantity = 1, offerId = null) => {
-    const { data } = await cartService.add(productId, quantity, offerId);
+  const addToCart = async (productId, quantity = 1, offerId = null, bankDiscountId = null) => {
+    const { data } = await cartService.add(productId, quantity, offerId, bankDiscountId);
     setCart(data);
     return data;
   };

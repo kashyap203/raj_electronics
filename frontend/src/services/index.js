@@ -26,6 +26,10 @@ export const productService = {
   updateSerialNumber: (id, snId, data) => api.put(`/products/${id}/serial-numbers/${snId}`, data),
   deleteSerialNumber: (id, snId) => api.delete(`/products/${id}/serial-numbers/${snId}`),
   getAvailableOffers: (id) => api.get(`/products/${id}/available-offers`),
+  getBankDiscounts: (id) => api.get(`/products/${id}/bank-discounts`),
+  addBankDiscount: (id, data) => api.post(`/products/${id}/bank-discounts`, data),
+  updateBankDiscount: (id, discountId, data) => api.put(`/products/${id}/bank-discounts/${discountId}`, data),
+  deleteBankDiscount: (id, discountId) => api.delete(`/products/${id}/bank-discounts/${discountId}`),
 };
 
 export const categoryService = {
@@ -46,11 +50,12 @@ export const brandService = {
 
 export const cartService = {
   get: () => api.get('/cart'),
-  add: (productId, quantity = 1, offerId) => api.post('/cart', { productId, quantity, offerId }),
+  add: (productId, quantity = 1, offerId, bankDiscountId) => api.post('/cart', { productId, quantity, offerId, bankDiscountId }),
   update: (productId, quantity) => api.put(`/cart/${productId}`, { quantity }),
   remove: (productId) => api.delete(`/cart/${productId}`),
   clear: () => api.delete('/cart'),
   applyOffer: (offerId) => api.put('/cart/offer', { offerId }),
+  applyBankDiscount: (productId, discountId) => api.put('/cart/bank-discount', { productId, discountId }),
 };
 
 export const wishlistService = {

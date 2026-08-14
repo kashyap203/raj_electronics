@@ -2,6 +2,7 @@ import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import Brand from '../models/Brand.js';
 import ProductSerialNumber from '../models/ProductSerialNumber.js';
+import ProductBankDiscount from '../models/ProductBankDiscount.js';
 import OfferEligibility from '../models/OfferEligibility.js';
 import slugify from '../utils/slugify.js';
 
@@ -91,6 +92,84 @@ const buildProductQuery = async (query) => {
   return { filter, sortOption };
 };
 
+// --- Per-Product Bank Discount Management ---
+
+export const getBankDiscounts = async (req, res) => {
+  const bankDiscounts = await ProductBankDiscount.find({ product: req.params.id }).populate('bank').sort({ createdAt: -1 });
+  res.json(bankDiscounts);
+};
+
+export const addBankDiscount = async (req, res) => {
+  const { bank, cardType, description, discountType, discountValue, maxDiscountAmount, minTransactionAmount, startDate, endDate, isActive } = req.body;
+  const product = await Product.findById(req.params.id);
+  
+  if (!product) {
+    return res.status(404).json({ message: 'Product not found' });
+  }
+
+  // Check for duplicate bank name for the same product
+  const existing = await ProductBankDiscount.findOne({ product: req.params.id, bank });
+  if (existing) {
+    return res.status(400).json({ message: 'Discount for this bank already exists for this product.' });
+  }
+
+  const bankDiscount = await ProductBankDiscount.create({
+    product: req.params.id,
+    bank,
+    cardType,
+    description,
+    discountType,
+    discountValue: Number(discountValue),
+    maxDiscountAmount: maxDiscountAmount ? Number(maxDiscountAmount) : undefined,
+    minTransactionAmount: minTransactionAmount ? Number(minTransactionAmount) : undefined,
+    startDate,
+    endDate,
+    isActive: isActive === undefined ? true : isActive,
+  });
+
+  res.status(201).json(bankDiscount);
+};
+
+export const updateBankDiscount = async (req, res) => {
+  const { bank, cardType, description, discountType, discountValue, maxDiscountAmount, minTransactionAmount, startDate, endDate, isActive } = req.body;
+  const bankDiscount = await ProductBankDiscount.findById(req.params.discountId);
+  
+  if (!bankDiscount) {
+    return res.status(404).json({ message: 'Bank discount not found' });
+  }
+
+  if (bank && bank !== bankDiscount.bank?.toString()) {
+    const existing = await ProductBankDiscount.findOne({ product: bankDiscount.product, bank });
+    if (existing) {
+      return res.status(400).json({ message: 'Discount for this bank already exists for this product.' });
+    }
+    bankDiscount.bank = bank;
+  }
+
+  if (cardType !== undefined) bankDiscount.cardType = cardType;
+  if (description !== undefined) bankDiscount.description = description;
+  if (discountType) bankDiscount.discountType = discountType;
+  if (discountValue !== undefined) bankDiscount.discountValue = Number(discountValue);
+  if (maxDiscountAmount !== undefined) bankDiscount.maxDiscountAmount = maxDiscountAmount ? Number(maxDiscountAmount) : undefined;
+  if (minTransactionAmount !== undefined) bankDiscount.minTransactionAmount = minTransactionAmount ? Number(minTransactionAmount) : undefined;
+  if (startDate !== undefined) bankDiscount.startDate = startDate;
+  if (endDate !== undefined) bankDiscount.endDate = endDate;
+  if (isActive !== undefined) bankDiscount.isActive = Boolean(isActive);
+
+  await bankDiscount.save();
+  res.json(bankDiscount);
+};
+
+export const deleteBankDiscount = async (req, res) => {
+  const bankDiscount = await ProductBankDiscount.findById(req.params.discountId);
+  if (!bankDiscount) {
+    return res.status(404).json({ message: 'Bank discount not found' });
+  }
+
+  await bankDiscount.deleteOne();
+  res.json({ message: 'Bank discount removed' });
+};
+
 export const getProducts = async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 12;
@@ -124,7 +203,13 @@ export const getProductById = async (req, res) => {
     return res.status(404).json({ message: 'Product not found' });
   }
 
-  res.json(product);
+  // Attach all bank discounts (admin might need inactive ones)
+  const bankDiscounts = await ProductBankDiscount.find({ product: product._id }).populate('bank');
+  
+  const productObj = product.toObject();
+  productObj.bankDiscounts = bankDiscounts;
+
+  res.json(productObj);
 };
 
 export const getProductBySlug = async (req, res) => {
@@ -138,7 +223,13 @@ export const getProductBySlug = async (req, res) => {
     return res.status(404).json({ message: 'Product not found' });
   }
 
-  res.json(product);
+  // Attach active bank discounts
+  const bankDiscounts = await ProductBankDiscount.find({ product: product._id, isActive: true }).populate('bank');
+  
+  const productObj = product.toObject();
+  productObj.bankDiscounts = bankDiscounts;
+
+  res.json(productObj);
 };
 
 export const createProduct = async (req, res) => {
@@ -181,6 +272,27 @@ export const createProduct = async (req, res) => {
     featured: req.body.featured === 'true' || req.body.featured === true,
     bestSelling: req.body.bestSelling === 'true' || req.body.bestSelling === true,
   });
+
+  if (req.body.bankDiscounts) {
+    const bankDiscounts = typeof req.body.bankDiscounts === 'string'
+      ? JSON.parse(req.body.bankDiscounts)
+      : req.body.bankDiscounts;
+    for (const d of bankDiscounts) {
+      await ProductBankDiscount.create({
+        product: product._id,
+        bank: d.bank,
+        cardType: d.cardType,
+        description: d.description,
+        discountType: d.discountType,
+        discountValue: Number(d.discountValue),
+        maxDiscountAmount: d.maxDiscountAmount ? Number(d.maxDiscountAmount) : undefined,
+        minTransactionAmount: d.minTransactionAmount ? Number(d.minTransactionAmount) : undefined,
+        startDate: d.startDate,
+        endDate: d.endDate,
+        isActive: Boolean(d.isActive),
+      });
+    }
+  }
 
   const populated = await Product.findById(product._id)
     .populate('brand', 'name logo')
@@ -247,6 +359,51 @@ export const updateProduct = async (req, res) => {
   product.images = [...existingImages, ...newImages];
 
   const updated = await product.save();
+
+  if (req.body.bankDiscounts) {
+    const bankDiscounts = typeof req.body.bankDiscounts === 'string'
+      ? JSON.parse(req.body.bankDiscounts)
+      : req.body.bankDiscounts;
+    
+    const existingDiscounts = await ProductBankDiscount.find({ product: updated._id });
+    const existingIds = existingDiscounts.map(d => d._id.toString());
+    const incomingIds = bankDiscounts.map(d => d._id).filter(Boolean);
+
+    const toDelete = existingIds.filter(id => !incomingIds.includes(id));
+    await ProductBankDiscount.deleteMany({ _id: { $in: toDelete } });
+
+    for (const d of bankDiscounts) {
+      if (d._id && existingIds.includes(d._id)) {
+        await ProductBankDiscount.findByIdAndUpdate(d._id, {
+          bank: d.bank,
+          cardType: d.cardType,
+          description: d.description,
+          discountType: d.discountType,
+          discountValue: Number(d.discountValue),
+          maxDiscountAmount: d.maxDiscountAmount ? Number(d.maxDiscountAmount) : undefined,
+          minTransactionAmount: d.minTransactionAmount ? Number(d.minTransactionAmount) : undefined,
+          startDate: d.startDate,
+          endDate: d.endDate,
+          isActive: Boolean(d.isActive),
+        });
+      } else {
+        await ProductBankDiscount.create({
+          product: updated._id,
+          bank: d.bank,
+          cardType: d.cardType,
+          description: d.description,
+          discountType: d.discountType,
+          discountValue: Number(d.discountValue),
+          maxDiscountAmount: d.maxDiscountAmount ? Number(d.maxDiscountAmount) : undefined,
+          minTransactionAmount: d.minTransactionAmount ? Number(d.minTransactionAmount) : undefined,
+          startDate: d.startDate,
+          endDate: d.endDate,
+          isActive: Boolean(d.isActive),
+        });
+      }
+    }
+  }
+
   const populated = await Product.findById(updated._id)
     .populate('brand', 'name logo')
     .populate('category', 'name image')

@@ -9,6 +9,7 @@ import {
   removeFromCart,
   clearCart,
   applyOffer,
+  applyBankDiscount,
 } from '../controllers/cartController.js';
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.post(
   addToCart
 );
 router.put('/offer', applyOffer);
+router.put('/bank-discount', applyBankDiscount);
 router.put(
   '/:productId',
   [body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1')],

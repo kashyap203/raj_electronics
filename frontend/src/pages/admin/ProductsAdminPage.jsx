@@ -8,7 +8,7 @@ import { formatPrice, getImageUrl, getDiscountedPrice } from '../../utils/helper
 const EMPTY_FORM = {
   name: '', brand: '', category: '', price: '', stock: '',
   description: '', featured: false, bestSelling: false,
-  specifications: '', features: '', offers: [],
+  specifications: '', features: '', offers: [], bankDiscounts: [],
 };
 
 const ProductsAdminPage = () => {
@@ -74,6 +74,7 @@ const ProductsAdminPage = () => {
       description: p.description, featured: p.featured, bestSelling: p.bestSelling,
       specifications: specs, features: Array.isArray(p.features) ? p.features.join('\n') : '',
       offers: p.offers?.map(o => (typeof o === 'string' ? o : o._id)) || [],
+      bankDiscounts: p.bankDiscounts || [],
     });
     setExistingImages(p.images || []);
     setImages([]);
@@ -95,11 +96,12 @@ const ProductsAdminPage = () => {
       }
       const features = form.features.trim() ? form.features.split('\n').map(f => f.trim()).filter(Boolean) : [];
       Object.entries(form).forEach(([k, v]) => {
-        if (k !== 'specifications' && k !== 'features' && k !== 'offers') fd.append(k, v);
+        if (k !== 'specifications' && k !== 'features' && k !== 'offers' && k !== 'bankDiscounts') fd.append(k, v);
       });
       fd.append('specifications', JSON.stringify(specs));
       fd.append('features', JSON.stringify(features));
       fd.append('offers', JSON.stringify(form.offers));
+      fd.append('bankDiscounts', JSON.stringify(form.bankDiscounts));
       if (editing) fd.append('existingImages', JSON.stringify(existingImages));
       images.forEach(img => fd.append('images', img));
 
@@ -286,29 +288,126 @@ const ProductsAdminPage = () => {
                     className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none" />
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Available Bank Offers</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 max-h-40 overflow-y-auto">
-                    {allOffers.length > 0 ? allOffers.map(offer => (
-                      <label key={offer._id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded transition">
-                        <input 
-                          type="checkbox" 
-                          className="accent-primary" 
-                          checked={form.offers.includes(offer._id)}
-                          onChange={e => {
-                            if (e.target.checked) {
-                              setForm(f => ({ ...f, offers: [...f.offers, offer._id] }));
-                            } else {
-                              setForm(f => ({ ...f, offers: f.offers.filter(id => id !== offer._id) }));
-                            }
-                          }}
-                        />
-                        <span className="truncate">{offer.bankName} - {offer.discountType === 'percentage' ? `${offer.discountValue}%` : `₹${offer.discountValue}`} off</span>
-                      </label>
-                    )) : (
-                      <p className="text-xs text-gray-500">No active offers available</p>
-                    )}
+                <div className="sm:col-span-2 pt-4 border-t border-gray-100 mt-2">
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="block text-sm font-bold text-gray-800">Per-Product Bank Discounts</label>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, bankDiscounts: [...f.bankDiscounts, { bank: '', cardType: 'Credit Card', description: '', discountType: 'percentage', discountValue: '', maxDiscountAmount: '', minTransactionAmount: '', startDate: '', endDate: '', isActive: true }] }))} className="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+                      <FaPlus size={10} /> Add Bank Discount
+                    </button>
                   </div>
+                  {form.bankDiscounts.length === 0 ? (
+                     <p className="text-xs text-gray-400">No bank discounts configured. Click "Add Bank Discount" to configure per-product offers.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {form.bankDiscounts.map((bd, i) => (
+                        <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-200 relative">
+                          <button type="button" onClick={() => {
+                             const newBD = form.bankDiscounts.filter((_, idx) => idx !== i);
+                             setForm(f => ({ ...f, bankDiscounts: newBD }));
+                          }} className="absolute top-3 right-3 text-red-500 hover:text-red-600 p-1.5 bg-red-50 rounded transition">
+                            <FaTrash size={12} />
+                          </button>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 pr-8">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Bank</label>
+                              <select value={bd.bank} required onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].bank = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none">
+                                <option value="">Select Bank</option>
+                                {allOffers.map(o => (
+                                  <option key={o._id} value={o._id}>{o.bankName}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Card Type</label>
+                              <select value={bd.cardType} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].cardType = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none">
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Credit & Debit Cards">Credit & Debit Cards</option>
+                                <option value="Net Banking">Net Banking</option>
+                                <option value="UPI">UPI</option>
+                              </select>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                              <input type="text" required placeholder="e.g. 10% off up to ₹1,000 on EMI" value={bd.description} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].description = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Discount Type</label>
+                              <select value={bd.discountType} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].discountType = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none">
+                                <option value="percentage">Percent (%)</option>
+                                <option value="amount">Flat Amount (₹)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Value</label>
+                              <input type="number" required min="1" placeholder="Value" value={bd.discountValue} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].discountValue = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Max Discount (₹)</label>
+                              <input type="number" placeholder="Optional" value={bd.maxDiscountAmount} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].maxDiscountAmount = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Min Transaction (₹)</label>
+                              <input type="number" placeholder="Optional" value={bd.minTransactionAmount} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].minTransactionAmount = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                              <input type="date" value={bd.startDate ? new Date(bd.startDate).toISOString().split('T')[0] : ''} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].startDate = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+                              <input type="date" value={bd.endDate ? new Date(bd.endDate).toISOString().split('T')[0] : ''} onChange={e => {
+                                const newBD = [...form.bankDiscounts];
+                                newBD[i].endDate = e.target.value;
+                                setForm(f => ({ ...f, bankDiscounts: newBD }));
+                              }} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-primary outline-none" />
+                            </div>
+                          </div>
+                          <label className="flex items-center gap-1 text-xs cursor-pointer w-max">
+                            <input type="checkbox" checked={bd.isActive} onChange={e => {
+                               const newBD = [...form.bankDiscounts];
+                               newBD[i].isActive = e.target.checked;
+                               setForm(f => ({ ...f, bankDiscounts: newBD }));
+                            }} className="accent-primary" />
+                            Active Offer
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

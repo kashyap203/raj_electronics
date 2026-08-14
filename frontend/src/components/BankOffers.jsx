@@ -20,37 +20,59 @@ const BankOffers = ({ price, onApplyOffer, appliedOffer, offers }) => {
 
         {/* Scrollable Offers List */}
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
-          {offers.map((offer) => (
-            <div key={offer._id} className="min-w-[240px] max-w-[260px] snap-start border border-gray-200 rounded-lg bg-white p-3 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition border-b-[3px] border-b-transparent hover:border-b-primary">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="bg-orange-50 p-1.5 rounded-md">
-                    <FaCreditCard className="text-primary text-sm" />
+          {offers.map((offer) => {
+            const actualBankName = offer.bank ? offer.bank.bankName : offer.bankName;
+            const logo = offer.bank ? offer.bank.logo : offer.logo;
+
+            return (
+              <div key={offer._id} className="min-w-[240px] max-w-[260px] snap-start border border-gray-200 rounded-lg bg-white p-3 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition border-b-[3px] border-b-transparent hover:border-b-primary flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2">
+                      {logo ? (
+                        <div className="w-8 h-8 rounded bg-white border border-gray-100 flex items-center justify-center p-1 overflow-hidden">
+                          <img src={`http://localhost:5000${logo}`} alt={actualBankName} className="w-full h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="bg-orange-50 p-1.5 rounded-md">
+                          <FaCreditCard className="text-primary text-sm" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-bold text-gray-900 text-sm">
+                          {offer.discountType === 'amount' ? `₹${offer.discountValue} off` : `${offer.discountValue}% off`}
+                        </p>
+                        <p className="text-[11px] text-gray-500 font-medium line-clamp-1">{actualBankName}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onApplyOffer(appliedOffer?._id === offer._id ? null : offer)}
+                      className={`font-bold text-xs uppercase hover:underline cursor-pointer ${appliedOffer?._id === offer._id ? 'text-green-600' : 'text-primary'
+                        }`}
+                    >
+                      {appliedOffer?._id === offer._id ? 'Applied' : 'Apply'}
+                    </button>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">
-                      {offer.discountType === 'amount' ? `₹${offer.discountValue} off` : `${offer.discountValue}% off`}
+                  {offer.description && (
+                    <p className="text-xs text-gray-600 line-clamp-2 mt-1 leading-snug">
+                      {offer.description}
                     </p>
-                    <p className="text-[11px] text-gray-500 font-medium">{offer.bankName}</p>
-                  </div>
+                  )}
+                  {offer.minTransactionAmount > 0 && (
+                     <p className="text-[10px] text-gray-500 mt-1">
+                       On orders of ₹{offer.minTransactionAmount} and above
+                     </p>
+                  )}
                 </div>
-                <button
-                  onClick={() => onApplyOffer(appliedOffer?._id === offer._id ? null : offer)}
-                  className={`font-bold text-xs uppercase hover:underline cursor-pointer ${appliedOffer?._id === offer._id ? 'text-green-600' : 'text-primary'
-                    }`}
-                >
-                  {appliedOffer?._id === offer._id ? 'Applied' : 'Apply'}
-                </button>
+                {offer.cardType && (
+                  <div className="mt-2 text-[10px] text-gray-400 font-medium flex items-center justify-between border-t border-gray-100 pt-2">
+                    <span>{offer.cardType}</span>
+                    <FaChevronRight />
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-gray-600 line-clamp-2 mt-1 leading-snug">
-                {offer.description}
-              </p>
-              <div className="mt-2 text-[10px] text-gray-400 font-medium flex items-center justify-between border-t border-gray-100 pt-2">
-                <span>{offer.cardType}</span>
-                <FaChevronRight />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

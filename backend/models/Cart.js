@@ -5,6 +5,7 @@ const cartItemSchema = new mongoose.Schema({
   quantity: { type: Number, required: true, min: 1, default: 1 },
   selectedSerialNumber: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductSerialNumber', default: null },
   appliedOffer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer', default: null },
+  appliedBankDiscount: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductBankDiscount', default: null },
 });
 
 const cartSchema = new mongoose.Schema(

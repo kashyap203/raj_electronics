@@ -10,6 +10,7 @@ const orderItemSchema = new mongoose.Schema({
   serialNumber: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductSerialNumber', default: null }, // Legacy field
   serialNumbers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProductSerialNumber' }],
   appliedCreditCardOffer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer', default: null },
+  appliedBankDiscount: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductBankDiscount', default: null },
   creditCardDiscountAmount: { type: Number, default: 0 },
 });
 
