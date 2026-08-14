@@ -98,9 +98,9 @@ export const createOrder = async (req, res) => {
       for (const sn of assignedSerialNumbers) {
         if (isOnline) {
           sn.status = 'Reserved';
-          sn.reservedUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+          sn.reservedUntil = new Date(Date.now() + 3 * 60 * 1000); // 3 mins
         } else {
-          sn.status = 'Sold';
+          sn.status = 'Reserved'; // COD items stay reserved until delivered
         }
         await sn.save({ session });
       }
@@ -288,6 +288,22 @@ export const updateOrderStatus = async (req, res) => {
     order.deliveredAt = Date.now();
     order.isPaid = true;
     order.paidAt = Date.now();
+
+    // Mark serial numbers as Sold since the order is delivered
+    for (const item of order.products) {
+      if (item.serialNumbers && item.serialNumbers.length > 0) {
+        await ProductSerialNumber.updateMany(
+          { _id: { $in: item.serialNumbers } },
+          { $set: { status: 'Sold', reservedUntil: null } }
+        );
+      }
+      if (item.serialNumber) {
+        await ProductSerialNumber.findByIdAndUpdate(
+          item.serialNumber,
+          { $set: { status: 'Sold', reservedUntil: null } }
+        );
+      }
+    }
   }
 
   // Handle inventory restoration if admin cancels the order
