@@ -183,49 +183,35 @@ const ProductDetailPage = () => {
 
           {/* COLUMN 1: Image Gallery (5 cols on lg) */}
           <div className="lg:col-span-5 flex flex-col">
-            <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 mb-4 group">
+            <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 mb-4 group flex items-center justify-center p-12 text-center">
+              <span className="text-gray-400 font-bold text-xl absolute z-0">{product.name}</span>
               <img
                 src={
                   product.images?.length
                     ? `${API_URL}${product.images[activeImage]}`
-                    : 'https://via.placeholder.com/300x300?text=No+Image'
+                    : ''
                 }
+                onError={(e) => { e.target.style.opacity = 0; }}
+                onLoad={(e) => { e.target.style.opacity = 1; }}
                 alt={product.name}
-                className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-300"
+                className="absolute inset-0 w-full h-full object-contain p-6 group-hover:scale-105 transition-all duration-300 bg-gray-50 z-10"
               />
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={() => setActiveImage((i) => (i - 1 + images.length) % images.length)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 shadow-md rounded-full p-2.5 hover:bg-primary hover:text-white transition"
-                    aria-label="Previous Image"
-                  >
-                    <FaChevronLeft size={14} />
-                  </button>
-                  <button
-                    onClick={() => setActiveImage((i) => (i + 1) % images.length)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 shadow-md rounded-full p-2.5 hover:bg-primary hover:text-white transition"
-                    aria-label="Next Image"
-                  >
-                    <FaChevronRight size={14} />
-                  </button>
-                </>
-              )}
+
               {product.discount > 0 && (
-                <span className="absolute top-4 left-4 bg-red-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
+                <span className="absolute top-4 left-4 bg-red-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-md uppercase tracking-wider z-20">
                   {product.discount}% OFF
                 </span>
               )}
               <button
                 onClick={handleShare}
-                className="absolute top-4 right-16 p-3 rounded-full shadow-md transition bg-white/90 text-gray-600 hover:text-primary"
+                className="absolute top-4 right-16 p-3 rounded-full shadow-md transition bg-white/90 text-gray-600 hover:text-primary z-20"
                 title="Share Product"
               >
                 <FaShareAlt size={16} />
               </button>
               <button
                 onClick={handleWishlist}
-                className={`absolute top-4 right-4 p-3 rounded-full shadow-md transition ${inWishlist ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'
+                className={`absolute top-4 right-4 p-3 rounded-full shadow-md transition z-20 ${inWishlist ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'
                   }`}
                 title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
               >
@@ -240,17 +226,20 @@ const ProductDetailPage = () => {
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}
-                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition bg-gray-50 p-1.5 ${i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
+                    className={`relative shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition bg-gray-50 p-1 flex items-center justify-center ${i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
+                    <span className="text-gray-400 font-bold text-[9px] leading-tight text-center line-clamp-3 absolute px-1 z-0">{product.name}</span>
                     <img
                       src={
                         img
                           ? `${API_URL}${img}`
-                          : 'https://via.placeholder.com/300x300?text=No+Image'
+                          : ''
                       }
+                      onError={(e) => { e.target.style.opacity = 0; }}
+                      onLoad={(e) => { e.target.style.opacity = 1; }}
                       alt={`Thumbnail ${i + 1}`}
-                      className="w-full h-full object-contain"
+                      className="absolute inset-0 w-full h-full object-contain bg-gray-50 z-10"
                     />
                   </button>
                 ))}

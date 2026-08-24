@@ -94,8 +94,8 @@ const CartPage = () => {
                     {p.name}
                   </Link>
                   <p className="text-xs text-gray-400 mt-0.5">{p.brand?.name}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between gap-4 mt-3">
+                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden shrink-0">
                       <button
                         onClick={() => item.quantity > 1 ? updateCartItem(p._id, item.quantity - 1) : removeFromCart(p._id)}
                         className="px-3 py-1.5 hover:bg-gray-100 text-sm font-bold"
@@ -111,9 +111,9 @@ const CartPage = () => {
                         <FaPlus size={10} />
                       </button>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-gray-900">{formatPrice(price * item.quantity)}</p>
-                      {p.discount > 0 && <p className="text-xs text-gray-400 line-through">{formatPrice(p.price * item.quantity)}</p>}
+                    <div className="text-right shrink-0 flex flex-col justify-center leading-tight">
+                      <p className="font-bold text-gray-900 sm:text-lg">{formatPrice(price * item.quantity)}</p>
+                      {p.discount > 0 && <p className="text-[11px] sm:text-xs text-gray-400 line-through mt-0.5">{formatPrice(p.price * item.quantity)}</p>}
                     </div>
                   </div>
                 </div>

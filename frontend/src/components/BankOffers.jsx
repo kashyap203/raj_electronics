@@ -59,9 +59,9 @@ const BankOffers = ({ price, onApplyOffer, appliedOffer, offers }) => {
                     </p>
                   )}
                   {offer.minTransactionAmount > 0 && (
-                     <p className="text-[10px] text-gray-500 mt-1">
-                       On orders of ₹{offer.minTransactionAmount} and above
-                     </p>
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      On orders of ₹{offer.minTransactionAmount} and above
+                    </p>
                   )}
                 </div>
                 {offer.cardType && (

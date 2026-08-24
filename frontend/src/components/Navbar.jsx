@@ -59,14 +59,14 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50">
       <div className="bg-dark/95 backdrop-blur-md text-white shadow-lg border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between gap-4 h-20 md:h-24">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4 h-16 sm:h-20 md:h-24">
             {/* Logo */}
             <NavLink to="/" className="flex items-center shrink-0 py-1">
               <img
                 src={logo}
                 alt="Raj Electronics"
-                className="h-16 sm:h-18 md:h-20 lg:h-22 w-auto max-h-20 md:max-h-22 object-contain transition-all hover:scale-105"
+                className="h-10 sm:h-14 md:h-18 lg:h-22 w-auto max-h-12 md:max-h-22 object-contain transition-all hover:scale-105"
               />
             </NavLink>
 
@@ -80,7 +80,7 @@ const Navbar = () => {
             </nav>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-4 sm:gap-5">
+            <div className="flex items-center gap-3 sm:gap-4">
               {/* Search toggle - desktop */}
               <div className="hidden md:flex items-center">
                 <button
@@ -92,26 +92,26 @@ const Navbar = () => {
                 </button>
               </div>
 
-              <NavLink to="/wishlist" className="relative hover:text-primary transition">
+              <NavLink to="/wishlist" className="relative hover:text-primary transition shrink-0">
                 <FaHeart size={20} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
               </NavLink>
 
-              <NavLink to="/cart" className="relative hover:text-primary transition">
+              <NavLink to="/cart" className="relative hover:text-primary transition shrink-0">
                 <FaShoppingCart size={20} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
               </NavLink>
 
               {user ? (
-                <div className="relative group">
+                <div className="relative group shrink-0">
                   <NavLink
                     to={user.role === 'admin' ? '/admin' : '/profile'}
                     className="flex items-center gap-1 hover:text-primary transition"
@@ -145,14 +145,14 @@ const Navbar = () => {
               ) : (
                 <NavLink
                   to="/login"
-                  className="bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-1.5 rounded-full transition text-sm"
+                  className="bg-primary hover:bg-primary-dark text-white font-semibold px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-full transition text-xs sm:text-sm shrink-0"
                 >
                   Login
                 </NavLink>
               )}
 
-              <button className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
-                <FaBars size={22} />
+              <button className="lg:hidden shrink-0 p-1 sm:p-2" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+                <FaBars size={22} className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
@@ -174,15 +174,19 @@ const Navbar = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSearch} className="flex items-stretch">
+            <form onSubmit={handleSearch} className="relative w-full">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-                className="flex-1 px-4 py-2 rounded-l-full bg-white text-gray-800 text-sm outline-none border-none"
+                placeholder="Search products..."
+                className="w-full bg-white/5 border border-white/10 text-white placeholder-gray-400 text-sm rounded-xl outline-none focus:border-primary/50 focus:bg-white/10 transition-all pl-4 pr-12 py-3 shadow-inner"
               />
-              <button type="submit" className="bg-primary hover:bg-primary-dark text-white px-4 flex items-center justify-center rounded-r-full transition">
+              <button 
+                type="submit" 
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary-dark text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                aria-label="Search"
+              >
                 <FaSearch size={14} />
               </button>
             </form>

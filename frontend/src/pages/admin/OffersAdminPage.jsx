@@ -7,7 +7,7 @@ const OffersAdminPage = () => {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentOffer, setCurrentOffer] = useState({
@@ -161,7 +161,7 @@ const OffersAdminPage = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden animate-fade-in-up">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h2 className="text-xl font-bold flex items-center gap-2"><FaTag className="text-primary"/> {isEditing ? 'Edit Offer' : 'New Offer'}</h2>
+              <h2 className="text-xl font-bold flex items-center gap-2"><FaTag className="text-primary" /> {isEditing ? 'Edit Offer' : 'New Offer'}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 transition text-2xl">&times;</button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">

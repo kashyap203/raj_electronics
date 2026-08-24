@@ -333,9 +333,9 @@ const CheckoutPage = () => {
                       }
                     }}
                     placeholder="Enter coupon code"
-                    className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none uppercase"
+                    className="flex-1 min-w-0 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none uppercase"
                   />
-                  <button type="button" onClick={applyCoupon} className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                  <button type="button" onClick={applyCoupon} className="shrink-0 bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">
                     Apply
                   </button>
                 </div>

@@ -10,7 +10,8 @@ const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -48,7 +49,7 @@ const ProductsPage = () => {
   }, []);
 
   const fetchProducts = useCallback(async (currentPage = 1) => {
-    setLoading(true);
+    setIsFetching(true);
     try {
       const params = { page: currentPage, limit: 12, ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)) };
       const { data } = await productService.getAll(params);
@@ -59,11 +60,18 @@ const ProductsPage = () => {
     } catch {
       setProducts([]);
     } finally {
-      setLoading(false);
+      setIsFetching(false);
+      setInitialLoading(false);
     }
   }, [filters]);
 
-  useEffect(() => { fetchProducts(1); }, [fetchProducts]);
+  // Debounced fetch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchProducts(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [fetchProducts]);
 
   const applyFilters = (newFilters) => {
     setFilters(newFilters);
@@ -164,11 +172,11 @@ const ProductsPage = () => {
         ))}
       </div>
 
-      <button onClick={() => applyFilters(filters)} className="w-full bg-primary hover:bg-primary-dark text-dark font-bold py-2.5 rounded-xl transition">
+      <button onClick={() => applyFilters(filters)} className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-2.5 rounded-xl transition">
         Apply Filters
       </button>
       {hasActiveFilters && (
-        <button onClick={clearFilters} className="w-full border border-gray-300 hover:bg-gray-50 text-gray-600 font-medium py-2.5 rounded-xl transition text-sm">
+        <button onClick={clearFilters} className="w-full border border-gray-300 hover:bg-gray-50 text-gray-600 font-medium py-2.5 rounded-xl transition text-sm mt-2">
           Clear All Filters
         </button>
       )}
@@ -181,7 +189,7 @@ const ProductsPage = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Products</h1>
-          {!loading && <p className="text-sm text-gray-500">{total} products found</p>}
+          {!initialLoading && <p className="text-sm text-gray-500">{total} products found</p>}
         </div>
         <div className="flex gap-3">
           {hasActiveFilters && (
@@ -210,7 +218,7 @@ const ProductsPage = () => {
             className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm"
           />
         </div>
-        <button type="submit" className="bg-primary hover:bg-primary-dark text-dark font-semibold px-5 py-2.5 rounded-xl transition text-sm">
+        <button type="submit" className="bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm">
           Search
         </button>
       </form>
@@ -239,7 +247,7 @@ const ProductsPage = () => {
 
         {/* Product Grid */}
         <div className="flex-1 min-w-0">
-          {loading ? (
+          {initialLoading ? (
             <Loader />
           ) : products.length === 0 ? (
             <EmptyState
@@ -252,12 +260,17 @@ const ProductsPage = () => {
               }
             />
           ) : (
-            <>
+            <div className="relative">
+              {isFetching && (
+                <div className="absolute inset-0 bg-white/50 z-10 flex items-start justify-center pt-20 backdrop-blur-[1px] rounded-2xl">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-md"></div>
+                </div>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                 {products.map(p => <ProductCard key={p._id} product={p} />)}
               </div>
               <Pagination page={page} pages={pages} onPageChange={p => fetchProducts(p)} />
-            </>
+            </div>
           )}
         </div>
       </div>
