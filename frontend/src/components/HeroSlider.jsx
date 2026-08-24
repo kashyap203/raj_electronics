@@ -126,9 +126,21 @@ const HeroSlider = () => {
                 </div>
               </div>
 
-              {/* Slide Image */}
-              <div className={`flex-1 w-full max-w-[260px] sm:max-w-md md:max-w-lg lg:max-w-xl transition-all duration-700 delay-100 transform ${isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
-                <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500">
+              {/* Slide Image Container */}
+              <div className={`flex items-center justify-center gap-3 sm:gap-6 w-full flex-1 transition-all duration-700 delay-100 transform ${isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+                
+                {/* Mobile Prev Arrow */}
+                {slides.length > 1 && isActive && (
+                  <button
+                    onClick={prevSlide}
+                    aria-label="Previous Slide"
+                    className="md:hidden shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 shadow-xl border border-white/15 cursor-pointer"
+                  >
+                    <FaChevronLeft className="text-sm" />
+                  </button>
+                )}
+
+                <div className="relative w-full max-w-[240px] sm:max-w-sm md:max-w-lg lg:max-w-xl rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500">
                   <img
                     src={activeImgSrc}
                     alt={slide.title}
@@ -137,6 +149,17 @@ const HeroSlider = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent md:hidden" />
                 </div>
+
+                {/* Mobile Next Arrow */}
+                {slides.length > 1 && isActive && (
+                  <button
+                    onClick={nextSlide}
+                    aria-label="Next Slide"
+                    className="md:hidden shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 shadow-xl border border-white/15 cursor-pointer"
+                  >
+                    <FaChevronRight className="text-sm" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -145,18 +168,18 @@ const HeroSlider = () => {
 
       {slides.length > 1 && (
         <>
-          {/* Navigation Arrows */}
+          {/* Desktop Navigation Arrows (Positioned on the edges of the banner) */}
           <button
             onClick={prevSlide}
             aria-label="Previous Slide"
-            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
+            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md hidden md:flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
           >
             <FaChevronLeft className="text-sm md:text-xl" />
           </button>
           <button
             onClick={nextSlide}
             aria-label="Next Slide"
-            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
+            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-12 md:h-12 rounded-full bg-black/50 hover:bg-primary text-white backdrop-blur-md hidden md:flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 shadow-xl border border-white/15 cursor-pointer"
           >
             <FaChevronRight className="text-sm md:text-xl" />
           </button>
