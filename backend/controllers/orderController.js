@@ -5,6 +5,8 @@ import DeliveryCity from '../models/DeliveryCity.js';
 import ProductSerialNumber from '../models/ProductSerialNumber.js';
 import OfferEligibility from '../models/OfferEligibility.js';
 import Offer from '../models/Offer.js';
+import ProductEmiOffer from '../models/ProductEmiOffer.js';
+import { calculateEMI } from '../services/emiCalculationService.js';
 import { sendOrderStatusNotification } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 
@@ -148,6 +150,71 @@ export const createOrder = async (req, res) => {
 
     const total = Math.max(0, itemsPrice - couponDiscount - totalCreditCardDiscount) + shippingPrice;
 
+    // --- EMI Snapshot Construction ---
+    let orderType = 'ONLINE_ORDER';
+    let emiSnapshot = undefined;
+
+    if (paymentMethod === 'EMI' && req.body.emiDetails) {
+      orderType = 'EMI_ORDER';
+      const { emiOfferId, tenureMonths } = req.body.emiDetails;
+      
+      let emiOffer = null;
+      let interestRate = 15; // default base interest
+      let processingFee = 0;
+      let bankName = 'Base EMI';
+      let emiType = 'REGULAR';
+      let discountAmount = 0;
+      let discountType = 'none';
+      let cardType = 'CREDIT';
+      
+      if (emiOfferId) {
+        emiOffer = await ProductEmiOffer.findById(emiOfferId);
+        if (emiOffer) {
+          interestRate = emiOffer.interestRate;
+          processingFee = emiOffer.processingFee;
+          bankName = emiOffer.bankName;
+          emiType = emiOffer.emiType;
+          discountAmount = emiOffer.discountValue;
+          discountType = emiOffer.discountType;
+          cardType = emiOffer.cardType;
+        }
+      }
+
+      // We calculate EMI based on the subtotal *before* EMI discounts, because EMI discount is applied during EMI calculation
+      const emiCalc = calculateEMI({
+        principal: total,
+        interestRate,
+        tenureMonths,
+        processingFee,
+        discountValue: discountAmount,
+        discountType,
+        emiType
+      });
+
+      emiSnapshot = {
+        isEmiOrder: true,
+        emiOfferId: emiOffer ? emiOffer._id : null,
+        bankName,
+        cardType,
+        cardNetwork: null, // gateway will provide if possible
+        tenureMonths,
+        emiType,
+        interestRate,
+        processingFee,
+        discountAmount: emiCalc.totalDiscount,
+        discountType,
+        baseAmount: total,
+        eligibleAmount: emiCalc.principal,
+        finalPayableAmount: emiCalc.finalPayable,
+        monthlyEmi: emiCalc.monthlyEMI,
+        totalInterest: emiCalc.totalInterest,
+        totalProcessingFee: emiCalc.processingFee,
+        totalDiscount: emiCalc.totalDiscount,
+        emiStartDate: new Date(),
+        emiEndDate: new Date(new Date().setMonth(new Date().getMonth() + tenureMonths))
+      };
+    }
+
     const order = await Order.create([{
       user: req.user._id,
       products,
@@ -156,9 +223,11 @@ export const createOrder = async (req, res) => {
       couponCode: couponCode === 'DISCOUNT10' ? couponCode : null,
       couponDiscount,
       creditCardDiscountAmount: totalCreditCardDiscount,
-      total,
+      total: emiSnapshot ? emiSnapshot.finalPayableAmount : total,
       address,
       paymentMethod,
+      orderType,
+      emiDetails: emiSnapshot,
     }], { session });
 
     // Link sold/reserved serial numbers to the order

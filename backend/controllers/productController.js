@@ -289,6 +289,7 @@ export const createProduct = async (req, res) => {
     offers,
     featured: req.body.featured === 'true' || req.body.featured === true,
     bestSelling: req.body.bestSelling === 'true' || req.body.bestSelling === true,
+    emiConfig: req.body.emiConfig ? (typeof req.body.emiConfig === 'string' ? JSON.parse(req.body.emiConfig) : req.body.emiConfig) : undefined,
   });
 
   if (req.body.bankDiscounts) {
@@ -372,6 +373,12 @@ export const updateProduct = async (req, res) => {
   }
   if (req.body.bestSelling !== undefined) {
     product.bestSelling = req.body.bestSelling === 'true' || req.body.bestSelling === true;
+  }
+
+  if (req.body.emiConfig) {
+    product.emiConfig = typeof req.body.emiConfig === 'string'
+      ? JSON.parse(req.body.emiConfig)
+      : req.body.emiConfig;
   }
 
   product.images = [...existingImages, ...newImages];

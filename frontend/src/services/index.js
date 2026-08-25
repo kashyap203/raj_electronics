@@ -88,6 +88,9 @@ export const deliveryCityService = {
   delete: (id) => api.delete(`/delivery-cities/${id}`),
 };
 
+export { fetchEmiOptions, emiAdminService } from './emiService';
+export * from './productEmiService';
+
 export const paymentService = {
   createRazorpayOrder: (orderId) => api.post('/payment/create-order', { orderId }),
   verifyPayment: (data) => api.post('/payment/verify-payment', data),

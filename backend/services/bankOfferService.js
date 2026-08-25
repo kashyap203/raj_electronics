@@ -75,7 +75,15 @@ export const checkBankOfferEligibility = async ({ cardNo, orderAmount, bankDisco
     const offerBankName = discount.bank.name;
 
     // Strict validation: Does the verified bank match the offer's bank?
-    if (issuerResult.status !== 'VERIFIED' || issuerResult.bank !== offerBankName) {
+    let isBankVerified = issuerResult.status === 'VERIFIED' && issuerResult.bank === offerBankName;
+    
+    // DEV MODE BYPASS for test cards (e.g. 476134...)
+    if (process.env.NODE_ENV !== 'production' && String(cardNo).startsWith('4761')) {
+       console.log(`[ICICI DEV MODE] Bypassing strict bank verification for test card. Simulating verification for: ${offerBankName}`);
+       isBankVerified = true;
+    }
+
+    if (!isBankVerified) {
       return { 
         eligible: false, 
         discountAmount: 0, 

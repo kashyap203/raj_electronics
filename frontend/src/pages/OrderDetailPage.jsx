@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { FaShoppingBag, FaMapMarkerAlt, FaCreditCard, FaCheckCircle, FaFileInvoice } from 'react-icons/fa';
 import { orderService } from '../services';
 import { Loader, Alert, Breadcrumb } from '../components/common';
@@ -91,14 +91,14 @@ const OrderDetailPage = () => {
       />
 
       {justPlaced && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center gap-3 animate-fade-in">
+        <div className={`border rounded-xl p-4 mb-6 flex items-center gap-3 animate-fade-in ${isPaymentSuccess ? 'bg-green-50 border-green-200' : 'bg-green-50 border-green-200'}`}>
           <FaCheckCircle className="text-green-500 text-xl shrink-0" />
           <div>
             <p className="font-semibold text-green-800">
-              Order placed successfully!
+              {isPaymentSuccess ? 'Payment Successful & Order Placed!' : 'Order placed successfully!'}
             </p>
             <p className="text-sm text-green-600">
-              Thank you for shopping with Raj Electronics.
+              {isPaymentSuccess ? 'Your payment has been successfully processed.' : 'Thank you for shopping with Raj Electronics.'}
             </p>
           </div>
         </div>
@@ -286,7 +286,7 @@ const OrderDetailPage = () => {
             <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
               <FaCreditCard className="text-primary" size={14} /> Payment Information
             </h3>
-            <p className="text-sm text-gray-800 font-medium">{order.paymentMethod}</p>
+            <p className="text-sm text-gray-800 font-medium">{order.paymentMethod === 'EMI' ? 'EMI Payment' : order.paymentMethod}</p>
             {order.paymentDetails?.razorpayPaymentId && (
               <p className="text-xs text-gray-500 mt-1 font-mono">
                 Payment ID: {order.paymentDetails.razorpayPaymentId}
@@ -309,6 +309,67 @@ const OrderDetailPage = () => {
                 : '● Payment Pending'}
             </p>
           </div>
+
+          {order.orderType === 'EMI_ORDER' && order.emiDetails && (
+            <div className="bg-white rounded-2xl shadow-sm p-4 border border-blue-100 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -z-0"></div>
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 relative z-10">
+                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">EMI</span>
+                EMI Details
+              </h3>
+              
+              <div className="space-y-2 text-sm relative z-10">
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Bank</span>
+                  <span className="font-semibold text-gray-800">{order.emiDetails.bankName || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Card Type</span>
+                  <span className="font-medium text-gray-700">{order.emiDetails.cardType || 'Credit Card'}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Tenure</span>
+                  <span className="font-medium text-gray-800">{order.emiDetails.tenureMonths} Months</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">EMI Type</span>
+                  <span className="font-medium text-gray-700">
+                    {order.emiDetails.emiType === 'NO_COST' ? (
+                      <span className="text-green-600 font-bold bg-green-50 px-1 rounded">No Cost EMI</span>
+                    ) : (
+                      'Regular EMI'
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Monthly EMI</span>
+                  <span className="font-bold text-primary">{formatPrice(order.emiDetails.monthlyEmi)}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Interest Rate</span>
+                  <span className="font-medium text-gray-700">{order.emiDetails.interestRate}%</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Interest</span>
+                  <span className="font-medium text-gray-700">{formatPrice(order.emiDetails.totalInterest)}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-100 pb-2">
+                  <span className="text-gray-500">Processing Fee</span>
+                  <span className="font-medium text-gray-700">{formatPrice(order.emiDetails.totalProcessingFee)}</span>
+                </div>
+                {order.emiDetails.discountAmount > 0 && (
+                  <div className="flex justify-between border-b border-gray-100 pb-2">
+                    <span className="text-gray-500">EMI Discount</span>
+                    <span className="font-medium text-green-600">-{formatPrice(order.emiDetails.discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-1">
+                  <span className="text-gray-600 font-medium">Final Amount</span>
+                  <span className="font-bold text-gray-800">{formatPrice(order.emiDetails.finalPayableAmount)}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

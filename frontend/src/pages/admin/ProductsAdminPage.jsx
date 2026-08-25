@@ -4,11 +4,14 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, FaListOl, FaImage } from 'r
 import { productService, categoryService, brandService, offerService } from '../../services';
 import { Loader, Alert, Pagination } from '../../components/common';
 import { formatPrice, getImageUrl, getDiscountedPrice } from '../../utils/helpers';
+import ProductEmiManager from '../../components/admin/ProductEmiManager';
+import ProductEmiConfig from '../../components/admin/ProductEmiConfig';
 
 const EMPTY_FORM = {
   name: '', brand: '', category: '', price: '', stock: '',
   description: '', featured: false, bestSelling: false,
   specifications: '', features: '', offers: [], bankDiscounts: [],
+  emiConfig: { enableEmi: false, availableTenures: [], baseInterestRate: 15, processingFee: 0, minEmiAmount: 3000 }
 };
 
 const ProductsAdminPage = () => {
@@ -75,6 +78,7 @@ const ProductsAdminPage = () => {
       specifications: specs, features: Array.isArray(p.features) ? p.features.join('\n') : '',
       offers: p.offers?.map(o => (typeof o === 'string' ? o : o._id)) || [],
       bankDiscounts: p.bankDiscounts?.map(d => ({ ...d, bank: d.bank?._id || d.bank })) || [],
+      emiConfig: p.emiConfig || { enableEmi: false, availableTenures: [], baseInterestRate: 15, processingFee: 0, minEmiAmount: 3000 }
     });
     setExistingImages(p.images || []);
     setImages([]);
@@ -96,12 +100,13 @@ const ProductsAdminPage = () => {
       }
       const features = form.features.trim() ? form.features.split('\n').map(f => f.trim()).filter(Boolean) : [];
       Object.entries(form).forEach(([k, v]) => {
-        if (k !== 'specifications' && k !== 'features' && k !== 'offers' && k !== 'bankDiscounts') fd.append(k, v);
+        if (k !== 'specifications' && k !== 'features' && k !== 'offers' && k !== 'bankDiscounts' && k !== 'emiConfig') fd.append(k, v);
       });
       fd.append('specifications', JSON.stringify(specs));
       fd.append('features', JSON.stringify(features));
       fd.append('offers', JSON.stringify(form.offers));
       fd.append('bankDiscounts', JSON.stringify(form.bankDiscounts));
+      fd.append('emiConfig', JSON.stringify(form.emiConfig));
       if (editing) fd.append('existingImages', JSON.stringify(existingImages));
       images.forEach(img => fd.append('images', img));
 
@@ -271,10 +276,17 @@ const ProductsAdminPage = () => {
                   </label>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Description*</label>
-                  <textarea required rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Description*</label>
+                  <textarea required value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows="4" className="w-full px-4 py-2 border border-gray-300 rounded-xl outline-none focus:border-primary" />
                 </div>
+
+                <div className="sm:col-span-2">
+                  <ProductEmiConfig
+                    emiConfig={form.emiConfig}
+                    onChange={(newConfig) => setForm({ ...form, emiConfig: newConfig })}
+                  />
+                </div>
+
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium mb-1">Specifications (one per line: Key: Value)</label>
                   <textarea rows={3} value={form.specifications} onChange={e => setForm(f => ({ ...f, specifications: e.target.value }))}
@@ -410,6 +422,10 @@ const ProductsAdminPage = () => {
                   )}
                 </div>
               </div>
+
+              {editing && (
+                <ProductEmiManager productId={editing._id} />
+              )}
 
               {/* Images */}
               <div>

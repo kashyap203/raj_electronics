@@ -26,7 +26,12 @@ const OrdersAdminPage = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const params = filterStatus ? { status: filterStatus } : {};
+      const params = {};
+      if (filterStatus === 'EMI_ORDER') {
+        params.orderType = 'EMI_ORDER';
+      } else if (filterStatus) {
+        params.status = filterStatus;
+      }
       const { data } = await orderService.getAll(params);
       setOrders(data);
     } finally {
@@ -62,6 +67,7 @@ const OrdersAdminPage = () => {
           >
             <option value="">All Statuses</option>
             {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            <option value="EMI_ORDER">EMI Orders</option>
           </select>
         </div>
       </div>
@@ -97,6 +103,9 @@ const OrdersAdminPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
+                  {order.orderType === 'EMI_ORDER' && (
+                    <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded tracking-wide">EMI</span>
+                  )}
                   <span className="font-bold text-gray-800">{formatPrice(order.total)}</span>
                   <span className={`text-xs font-semibold px-2 py-1 rounded-full ${statusColors[order.status]}`}>{order.status}</span>
                   <select
@@ -161,7 +170,32 @@ const OrdersAdminPage = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-700 mb-1 text-sm">Payment</h3>
-                        <p className="text-xs text-gray-500">{order.paymentMethod} · {order.isPaid ? '✓ Paid' : '● Pending'}</p>
+                        <p className="text-xs text-gray-500 mb-2">{order.paymentMethod === 'EMI' ? 'EMI Payment' : order.paymentMethod} · {order.isPaid ? '✓ Paid' : '● Pending'}</p>
+                        
+                        {order.orderType === 'EMI_ORDER' && order.emiDetails && (
+                          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-gray-700">
+                            <h4 className="font-semibold text-blue-800 mb-2 flex justify-between items-center">
+                              <span>EMI SNAPSHOT</span>
+                              <span className="bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded text-[10px]">{order.emiDetails.bankName}</span>
+                            </h4>
+                            <div className="grid grid-cols-2 gap-y-1.5 gap-x-3">
+                              <p><span className="text-gray-500">Card:</span> {order.emiDetails.cardType}</p>
+                              <p><span className="text-gray-500">Tenure:</span> {order.emiDetails.tenureMonths} Months</p>
+                              <p><span className="text-gray-500">Type:</span> {order.emiDetails.emiType === 'NO_COST' ? 'No Cost' : 'Regular'}</p>
+                              <p><span className="text-gray-500">Interest:</span> {order.emiDetails.interestRate}% ({formatPrice(order.emiDetails.totalInterest)})</p>
+                              <p><span className="text-gray-500">Proc. Fee:</span> {formatPrice(order.emiDetails.totalProcessingFee)}</p>
+                              {order.emiDetails.discountAmount > 0 && (
+                                <p className="col-span-2 text-green-700 font-medium">EMI Discount: -{formatPrice(order.emiDetails.discountAmount)}</p>
+                              )}
+                              <p className="col-span-2 font-bold text-gray-900 border-t border-blue-200 pt-1 mt-1">
+                                Monthly EMI: {formatPrice(order.emiDetails.monthlyEmi)}
+                              </p>
+                            </div>
+                            {order.paymentDetails?.merchantTxnNo && (
+                              <p className="mt-2 text-[10px] font-mono text-gray-500">Txn: {order.paymentDetails.merchantTxnNo}</p>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-700 mb-1 text-sm">Summary</h3>

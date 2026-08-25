@@ -18,6 +18,8 @@ import deliveryCityRoutes from './routes/deliveryCityRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import offerRoutes from './routes/offerRoutes.js';
 import sliderRoutes from './routes/sliderRoutes.js';
+import emiRoutes from './routes/emiRoutes.js';
+import productEmiRoutes from './routes/productEmiRoutes.js';
 
 
 
@@ -33,6 +35,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use((req, res, next) => {
+  if (req.originalUrl.includes('emi-offers')) {
+    console.log(`${req.method} ${req.originalUrl}`);
+  }
+  next();
+});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Raj Electronics API is running' });
@@ -50,6 +59,8 @@ app.use('/api/delivery-cities', deliveryCityRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/sliders', sliderRoutes);
+app.use('/api/emi', emiRoutes);
+app.use('/api/emi-offers', productEmiRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

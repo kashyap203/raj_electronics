@@ -41,9 +41,8 @@ const AdminLayout = () => {
             key={link.to}
             to={link.to}
             onClick={() => setMobileOpen(false)}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-              isActive(link) ? 'bg-primary text-white font-semibold' : 'hover:bg-dark-light'
-            }`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive(link) ? 'bg-primary text-white font-semibold' : 'hover:bg-dark-light'
+              }`}
           >
             <link.icon />
             {link.label}

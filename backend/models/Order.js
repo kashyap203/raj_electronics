@@ -29,6 +29,7 @@ const orderSchema = new mongoose.Schema(
       phone: { type: String, required: true },
     },
     paymentMethod: { type: String, default: 'Cash on Delivery' },
+    orderType: { type: String, enum: ['ONLINE_ORDER', 'EMI_ORDER', 'COD_ORDER'], default: 'ONLINE_ORDER' },
     paymentDetails: {
       gateway: { type: String, enum: ['RAZORPAY', 'ICICI_ORANGE_PG'], default: 'RAZORPAY' },
       razorpayOrderId: { type: String, default: null },
@@ -60,6 +61,28 @@ const orderSchema = new mongoose.Schema(
     paidAt: Date,
     isDelivered: { type: Boolean, default: false },
     deliveredAt: Date,
+    emiDetails: {
+      isEmiOrder: { type: Boolean, default: false },
+      emiOfferId: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductEmiOffer', default: null },
+      bankName: { type: String, default: null },
+      cardType: { type: String, default: null },
+      cardNetwork: { type: String, default: null },
+      tenureMonths: { type: Number, default: null },
+      emiType: { type: String, enum: ['REGULAR', 'NO_COST', null], default: null },
+      interestRate: { type: Number, default: null },
+      processingFee: { type: Number, default: 0 },
+      discountAmount: { type: Number, default: 0 },
+      discountType: { type: String, default: null },
+      baseAmount: { type: Number, default: null },
+      eligibleAmount: { type: Number, default: null },
+      finalPayableAmount: { type: Number, default: null },
+      monthlyEmi: { type: Number, default: null },
+      totalInterest: { type: Number, default: null },
+      totalProcessingFee: { type: Number, default: 0 },
+      totalDiscount: { type: Number, default: 0 },
+      emiStartDate: { type: Date, default: null },
+      emiEndDate: { type: Date, default: null },
+    }
   },
   { timestamps: true }
 );

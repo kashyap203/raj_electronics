@@ -34,6 +34,14 @@ const productSchema = new mongoose.Schema(
     bestSelling: { type: Boolean, default: false },
     salesCount: { type: Number, default: 0 },
     offers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Offer' }],
+    emiOffers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProductEmiOffer' }],
+    emiConfig: {
+      enableEmi: { type: Boolean, default: false },
+      availableTenures: [{ type: Number }], // e.g. [3, 6, 9, 12]
+      baseInterestRate: { type: Number, default: 15 },
+      processingFee: { type: Number, default: 0 },
+      minEmiAmount: { type: Number, default: 3000 }
+    }
   },
   { timestamps: true }
 );

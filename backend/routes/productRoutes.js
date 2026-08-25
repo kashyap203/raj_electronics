@@ -66,9 +66,15 @@ router.post('/:id/serial-numbers', protect, admin, addSerialNumber);
 router.put('/:id/serial-numbers/:snId', protect, admin, updateSerialNumber);
 router.delete('/:id/serial-numbers/:snId', protect, admin, deleteSerialNumber);
 
+import { getProductEmiOffers, createProductEmiOffer, getEligibleProductEmiOffers } from '../controllers/productEmiController.js';
+
 router.get('/:id/bank-discounts', getBankDiscounts);
 router.post('/:id/bank-discounts', protect, admin, addBankDiscount);
 router.put('/:id/bank-discounts/:discountId', protect, admin, updateBankDiscount);
 router.delete('/:id/bank-discounts/:discountId', protect, admin, deleteBankDiscount);
+
+router.get('/:id/emi-offers', getProductEmiOffers);
+router.post('/:id/emi-offers', protect, admin, createProductEmiOffer);
+router.get('/:id/eligible-emis', getEligibleProductEmiOffers);
 
 export default router;

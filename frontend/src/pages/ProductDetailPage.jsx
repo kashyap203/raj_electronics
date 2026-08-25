@@ -19,7 +19,9 @@ import {
 import { Loader, StarRating, Alert, Breadcrumb } from '../components/common';
 import ProductCard from '../components/ProductCard';
 import BankOffers from '../components/BankOffers';
-import { productService } from '../services';
+import ProductEmiOffers from '../components/ProductEmiOffers';
+import EmiSelectionModal from '../components/EmiSelectionModal';
+import { productService, productEmiService } from '../services';
 import { formatPrice, getDiscountedPrice } from '../utils/helpers';
 import { useAuth, useCart } from '../context/AppContext';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
@@ -46,6 +48,8 @@ const ProductDetailPage = () => {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [appliedOffer, setAppliedOffer] = useState(null);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [emiOffers, setEmiOffers] = useState([]);
+  const [showEmiModal, setShowEmiModal] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -60,6 +64,10 @@ const ProductDetailPage = () => {
         setRelated(r.data);
         if (p.data && p.data._id) {
           addRecentlyViewed(p.data._id);
+          const price = getDiscountedPrice(p.data.price, p.data.discount);
+          productEmiService.getEligible(p.data._id, price)
+            .then(res => setEmiOffers(res.data))
+            .catch(err => console.error('Failed to fetch EMI offers:', err));
         }
       })
       .catch((err) => console.error(err))
@@ -114,6 +122,25 @@ const ProductDetailPage = () => {
       navigate('/cart');
     } catch (err) {
       alert(err.response?.data?.message || 'Error adding to cart');
+      setCartLoading(false);
+    }
+  };
+
+  const handleBuyWithEmi = async (selectedEmiPlan) => {
+    if (!user) return navigate('/login');
+    setCartLoading(true);
+    try {
+      // Add to cart with normal applied offer if any
+      const isBankDiscount = appliedOffer && appliedOffer.product;
+      const offerId = isBankDiscount ? null : appliedOffer?._id;
+      const bankDiscountId = isBankDiscount ? appliedOffer._id : null;
+
+      await addToCart(product._id, quantity, offerId, bankDiscountId);
+      
+      // Store EMI configuration in session state for Checkout
+      navigate('/checkout', { state: { emiPlan: selectedEmiPlan } });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error initiating EMI purchase');
       setCartLoading(false);
     }
   };
@@ -298,13 +325,16 @@ const ProductDetailPage = () => {
               <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes. Free doorstep installation on selected electronics.</p>
             </div>
 
-            {/* Bank Offers (if any attached to product) */}
             <BankOffers
               price={baseDiscountedPrice}
               onApplyOffer={(offer) => setAppliedOffer(offer)}
               appliedOffer={appliedOffer}
               offers={[...(product.bankDiscounts || []), ...(product.offers || [])]}
             />
+
+            {emiOffers.length > 0 && (
+              <ProductEmiOffers offers={emiOffers} />
+            )}
 
             {/* Product Overview Highlights Table */}
             {quickSpecs.length > 0 && (
@@ -409,20 +439,34 @@ const ProductDetailPage = () => {
 
               {/* Action Buttons */}
               <div className="space-y-2.5 mb-5">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={product.stock === 0 || cartLoading}
-                  className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2 text-sm"
-                >
-                  <FaShoppingCart size={14} /> {cartLoading ? 'Adding...' : 'Add to Cart'}
-                </button>
-                <button
-                  onClick={handleBuyNow}
-                  disabled={product.stock === 0 || cartLoading}
-                  className="w-full bg-dark hover:bg-dark-light disabled:opacity-50 text-white font-bold py-3 rounded-xl transition shadow-sm text-sm"
-                >
-                  Buy Now
-                </button>
+                {emiOffers.length > 0 && (
+                  <button
+                    onClick={() => setShowEmiModal(true)}
+                    disabled={product.stock === 0 || cartLoading}
+                    className="w-full bg-[#FFD700] hover:bg-[#F2C800] disabled:opacity-50 text-dark font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2 text-sm leading-tight"
+                  >
+                    <div>
+                      <div>Buy with EMI</div>
+                      <div className="text-[11px] font-medium opacity-80 mt-0.5">From {formatPrice(emiOffers[0]?.monthlyEMI)}/m</div>
+                    </div>
+                  </button>
+                )}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={product.stock === 0 || cartLoading}
+                    className="w-full bg-dark hover:bg-dark-light disabled:opacity-50 text-white font-bold py-3 rounded-xl transition shadow-sm text-sm"
+                  >
+                    Buy Now
+                  </button>
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={product.stock === 0 || cartLoading}
+                    className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2 text-sm"
+                  >
+                    <FaShoppingCart size={14} /> {cartLoading ? 'Adding...' : 'Add to Cart'}
+                  </button>
+                </div>
               </div>
 
               {/* Trust Badges */}
@@ -619,6 +663,15 @@ const ProductDetailPage = () => {
           </div>
         </section>
       )}
+
+      <EmiSelectionModal
+        isOpen={showEmiModal}
+        onClose={() => setShowEmiModal(false)}
+        product={product}
+        price={finalPrice}
+        emiPlans={emiOffers}
+        onContinue={handleBuyWithEmi}
+      />
     </div>
   );
 };

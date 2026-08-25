@@ -34,10 +34,18 @@ const OrdersPage = () => {
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      // Filter by status
-      if (statusFilter.length > 0 && !statusFilter.includes(order.status)) {
-        return false;
+      // Filter by status/type
+      if (statusFilter.length > 0) {
+        if (statusFilter.includes('EMI Orders') && order.orderType !== 'EMI_ORDER') {
+          return false;
+        }
+        
+        const regularStatuses = statusFilter.filter(s => s !== 'EMI Orders');
+        if (regularStatuses.length > 0 && !regularStatuses.includes(order.status)) {
+          return false;
+        }
       }
+      
       // Filter by search term (order id or product name)
       if (searchTerm.trim() !== '') {
         const term = searchTerm.toLowerCase();
@@ -75,11 +83,12 @@ const OrdersPage = () => {
               <div className="mb-6">
                 <h3 className="font-medium text-xs text-gray-500 mb-3 uppercase tracking-wider">Order Status</h3>
                 <div className="space-y-3">
-                  {['On the way', 'Delivered', 'Cancelled', 'Returned'].map(statusLabel => {
+                  {['On the way', 'Delivered', 'Cancelled', 'Returned', 'EMI Orders'].map(statusLabel => {
                     let dbStatuses = [];
                     if (statusLabel === 'On the way') dbStatuses = ['Pending', 'Processing', 'Shipped'];
                     else if (statusLabel === 'Delivered') dbStatuses = ['Delivered'];
                     else if (statusLabel === 'Cancelled') dbStatuses = ['Cancelled'];
+                    else if (statusLabel === 'EMI Orders') dbStatuses = ['EMI Orders'];
                     
                     const isChecked = dbStatuses.some(s => statusFilter.includes(s));
                     
@@ -99,7 +108,9 @@ const OrdersPage = () => {
                           onChange={toggleStatus}
                           className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
                         />
-                        <span className="text-sm text-gray-700 group-hover:text-gray-900 transition">{statusLabel}</span>
+                        <span className={`text-sm group-hover:text-gray-900 transition ${statusLabel === 'EMI Orders' ? 'font-semibold text-blue-700' : 'text-gray-700'}`}>
+                          {statusLabel}
+                        </span>
                       </label>
                     );
                   })}
@@ -149,7 +160,14 @@ const OrdersPage = () => {
                   <div key={order._id} className="bg-white rounded-sm shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100">
                     {/* Header for Order ID */}
                     <div className="bg-gray-50 px-4 py-2 border-b border-gray-100 flex justify-between items-center text-xs text-gray-500">
-                      <span>Order <span className="font-semibold text-gray-700">#{order._id.slice(-8).toUpperCase()}</span></span>
+                      <div className="flex items-center gap-3">
+                        <span>Order <span className="font-semibold text-gray-700">#{order._id.slice(-8).toUpperCase()}</span></span>
+                        {order.orderType === 'EMI_ORDER' && order.emiDetails && (
+                          <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide">
+                            EMI: {order.emiDetails.bankName} - {order.emiDetails.tenureMonths} Months ({formatPrice(order.emiDetails.monthlyEmi)}/m)
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Order items map */}

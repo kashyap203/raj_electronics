@@ -1,12 +1,12 @@
 import express from 'express';
 import { createPaymentOrder, verifyPayment, handlePaymentFailure } from '../controllers/paymentController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { 
-  initiateICICIPayment, 
-  handleICICIResponse, 
-  handleICICIAdvice, 
-  checkICICIPaymentStatus, 
-  generateICICIQR, 
+import {
+  initiateICICIPayment,
+  handleICICIResponse,
+  handleICICIAdvice,
+  checkICICIPaymentStatus,
+  generateICICIQR,
   refundICICIPayment,
   getCardBin,
   generateOTP,
