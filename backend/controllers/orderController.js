@@ -60,18 +60,9 @@ export const createOrder = async (req, res) => {
         if (itemSubtotal < offer.minTransactionAmount) {
            throw new Error(`Minimum transaction of ${offer.minTransactionAmount} not met for ${offer.bankName} offer`);
         }
-
-        let discountAmount = 0;
-        if (offer.discountType === 'percentage') {
-          discountAmount = (itemSubtotal * offer.discountValue) / 100;
-        } else {
-          discountAmount = offer.discountValue;
-        }
         
-        discountAmount = Math.min(discountAmount, offer.maxDiscountAmount || offer.maxDiscount || Infinity);
-        itemDiscount = discountAmount;
-        totalCreditCardDiscount += discountAmount;
         appliedOfferId = offer._id;
+        // DO NOT calculate discount here. We must securely evaluate it when the card is provided during payment initiation.
       }
       // Check new ProductBankDiscount
       else if (item.appliedBankDiscount && isOnline) {
@@ -82,21 +73,9 @@ export const createOrder = async (req, res) => {
         if (bankDiscount.minTransactionAmount && itemSubtotal < bankDiscount.minTransactionAmount) {
            throw new Error(`Minimum transaction of ${bankDiscount.minTransactionAmount} not met for this bank discount`);
         }
-
-        let discountAmount = 0;
-        if (bankDiscount.discountType === 'percentage') {
-          discountAmount = (itemSubtotal * bankDiscount.discountValue) / 100;
-        } else {
-          discountAmount = bankDiscount.discountValue;
-        }
         
-        if (bankDiscount.maxDiscountAmount) {
-          discountAmount = Math.min(discountAmount, bankDiscount.maxDiscountAmount);
-        }
-
-        itemDiscount = discountAmount;
-        totalCreditCardDiscount += discountAmount;
         appliedBankDiscountId = bankDiscount._id;
+        // DO NOT calculate discount here. We must securely evaluate it when the card is provided during payment initiation.
       }
 
       if (item.selectedSerialNumber) {

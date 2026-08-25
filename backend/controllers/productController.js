@@ -19,7 +19,15 @@ const buildProductQuery = async (query) => {
     featured,
     bestSelling,
     sort,
+    ids
   } = query;
+
+  if (ids) {
+    const idArray = ids.split(',').filter(id => /^[0-9a-fA-F]{24}$/.test(id.trim())).map(id => id.trim());
+    if (idArray.length > 0) {
+      filter._id = { $in: idArray };
+    }
+  }
 
   if (search) {
     filter.$or = [
@@ -184,8 +192,18 @@ export const getProducts = async (req, res) => {
     .limit(limit)
     .skip((page - 1) * limit);
 
+  // Attach bank discounts for the fetched products
+  const productIds = products.map(p => p._id);
+  const allBankDiscounts = await ProductBankDiscount.find({ product: { $in: productIds } }).populate('bank');
+
+  const productsWithDiscounts = products.map(p => {
+    const pObj = p.toObject();
+    pObj.bankDiscounts = allBankDiscounts.filter(d => d.product.toString() === p._id.toString());
+    return pObj;
+  });
+
   res.json({
-    products,
+    products: productsWithDiscounts,
     page,
     pages: Math.ceil(count / limit),
     total: count,

@@ -5,6 +5,8 @@ import { useCart, useAuth } from '../context/AppContext';
 import { orderService, deliveryCityService, paymentService } from '../services';
 import { formatPrice, getDiscountedPrice, getImageUrl } from '../utils/helpers';
 import { Alert } from '../components/common';
+import CardPaymentForm from '../components/payment/CardPaymentForm';
+import OTPCaptureModal from '../components/payment/OTPCaptureModal';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -38,6 +40,11 @@ const CheckoutPage = () => {
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [couponDiscount, setCouponDiscount] = useState(0);
 
+  // ICICI States
+  const [validCardData, setValidCardData] = useState(null);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [otpFlowData, setOtpFlowData] = useState(null);
+
   const items = cart.items || [];
   const subtotal = items.reduce((acc, item) => {
     const price = getDiscountedPrice(item.product?.price || 0, item.product?.discount || 0);
@@ -46,6 +53,8 @@ const CheckoutPage = () => {
 
   let totalOfferDiscount = 0;
   const isOnlinePayment = paymentMethod !== 'Cash on Delivery';
+
+  let appliedBankDiscountId = null;
 
   items.forEach(item => {
     if (!item.product) return;
@@ -62,7 +71,11 @@ const CheckoutPage = () => {
            discount = (itemSubtotal * offer.discountValue) / 100;
          }
          discount = Math.min(discount, offer.maxDiscountAmount || Infinity);
-         totalOfferDiscount += discount;
+         
+         // Only apply visual discount for ICICI if explicitly eligible
+         if (paymentMethod !== 'Online Payment (ICICI)' || validCardData?.offerState === 'OFFER_ELIGIBLE') {
+           totalOfferDiscount += discount;
+         }
        }
     } else if (item.appliedBankDiscount && isOnlinePayment) {
        const bankDiscount = item.appliedBankDiscount;
@@ -77,7 +90,13 @@ const CheckoutPage = () => {
            if (bankDiscount.maxDiscountAmount) {
              discount = Math.min(discount, bankDiscount.maxDiscountAmount);
            }
-           totalOfferDiscount += discount;
+           
+           appliedBankDiscountId = bankDiscount._id;
+
+           // Only apply visual discount for ICICI if explicitly eligible
+           if (paymentMethod !== 'Online Payment (ICICI)' || validCardData?.offerState === 'OFFER_ELIGIBLE') {
+             totalOfferDiscount += discount;
+           }
          }
        }
     }
@@ -105,6 +124,16 @@ const CheckoutPage = () => {
     }
   };
 
+  const handleOtpSuccess = async (authData) => {
+    setIsOtpModalOpen(false);
+    if (authData.paymentStatus === 'PAID') {
+       await fetchCart();
+       navigate(`/profile/orders/${authData.orderId}?icici_payment=PAID`, { state: { success: true, paymentSuccess: true } });
+    } else {
+       setError("Payment failed during authorization.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (items.length === 0) return setError('Your cart is empty');
@@ -117,7 +146,7 @@ const CheckoutPage = () => {
         .map(item => ({ product: item.product._id, quantity: item.quantity }));
 
       const isOnline = paymentMethod !== 'Cash on Delivery';
-      const actualPaymentMethod = isOnline ? 'Online Payment (Razorpay)' : 'Cash on Delivery';
+      const actualPaymentMethod = isOnline ? (paymentMethod === 'Online Payment (ICICI)' ? 'Online Payment (ICICI Card)' : 'Online Payment (Razorpay)') : 'Cash on Delivery';
 
       // 1. Create order record in backend
       const { data: createdOrder } = await orderService.create({
@@ -136,15 +165,34 @@ const CheckoutPage = () => {
 
       // 3. Online Payment Flow (Razorpay or ICICI)
       if (paymentMethod === 'Online Payment (ICICI)') {
-        // ICICI Payment Flow
-        const { data: iciciData } = await paymentService.initiateICICIPayment(createdOrder._id);
-        if (iciciData.success && iciciData.redirectURI) {
-          window.location.href = iciciData.redirectURI;
+        if (!validCardData) {
+           setError("Please complete the card details correctly.");
+           setLoading(false);
+           return;
+        }
+
+        // ICICI Payment Flow - Direct Mode
+        const { data: iciciData } = await paymentService.initiateICICIDirectPayment({
+           orderId: createdOrder._id,
+           cardNo: validCardData.cardNo,
+           cardExp: validCardData.cardExp,
+           nameOnCard: validCardData.nameOnCard,
+           cvv: validCardData.cvv
+        });
+        
+        if (iciciData.success) {
+           if (iciciData.mode === 'OTP') {
+              setOtpFlowData({ ...iciciData, orderId: createdOrder._id });
+              setIsOtpModalOpen(true);
+              setLoading(false);
+           } else if (iciciData.mode === 'REDIRECT' && iciciData.redirectURI) {
+              window.location.href = iciciData.redirectURI;
+           }
         } else {
-          setError('Failed to initiate ICICI payment.');
+          setError(iciciData.message || 'Failed to initiate ICICI payment.');
           setLoading(false);
         }
-        return; // Execution stops here due to redirect
+        return; 
       }
 
       // Default to Razorpay if not ICICI
@@ -167,7 +215,6 @@ const CheckoutPage = () => {
         order_id: razorpayData.razorpayOrderId,
         handler: async function (response) {
           try {
-            // Verify HMAC SHA256 Signature on Backend
             await paymentService.verifyPayment({
               orderId: createdOrder._id,
               razorpayOrderId: response.razorpay_order_id,
@@ -233,7 +280,7 @@ const CheckoutPage = () => {
   const handleAddressChange = (e) => setAddress({ ...address, [e.target.name]: e.target.value });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 relative">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Checkout</h1>
       <Alert message={error} type="error" onClose={() => setError('')} />
 
@@ -272,11 +319,11 @@ const CheckoutPage = () => {
             </div>
 
             {/* Payment Method */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="font-bold text-gray-800 mb-4">
-                Payment Method
+            <div className="bg-white rounded-2xl shadow-sm p-6 transition-all duration-300">
+              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaLock className="text-primary" /> Payment Method
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
                   {
                     value: 'Cash on Delivery',
@@ -311,6 +358,18 @@ const CheckoutPage = () => {
                     </label>
                   </div>
                 ))}
+                
+                {/* Embedded Card Form if ICICI is selected */}
+                {paymentMethod === 'Online Payment (ICICI)' && (
+                  <div className="mt-4 animate-in slide-in-from-top-4 fade-in duration-300">
+                     <CardPaymentForm 
+                        onValidCardData={(data) => setValidCardData(data)} 
+                        disabled={loading} 
+                        orderAmount={subtotal - couponDiscount}
+                        bankDiscountId={appliedBankDiscountId}
+                     />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -393,17 +452,36 @@ const CheckoutPage = () => {
                   <span>Total</span><span>{formatPrice(total)}</span>
                 </div>
               </div>
+              
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-primary hover:bg-primary-dark disabled:opacity-60 text-dark font-bold py-3 rounded-xl transition mt-4"
+                disabled={loading || (paymentMethod === 'Online Payment (ICICI)' && !validCardData)}
+                className="w-full bg-primary hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed text-dark font-bold py-3 rounded-xl transition mt-4"
               >
-                {loading ? 'Placing Order...' : `Place Order – ${formatPrice(total)}`}
+                {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
               </button>
             </div>
           </div>
         </div>
       </form>
+      
+      {/* OTP Capture Modal overlay */}
+      {otpFlowData && (
+        <OTPCaptureModal
+          isOpen={isOtpModalOpen}
+          onClose={() => {
+            setIsOtpModalOpen(false);
+            setLoading(false);
+            setError('Payment was cancelled. You can retry from My Orders.');
+          }}
+          onVerifySuccess={handleOtpSuccess}
+          generateOTPURI={otpFlowData.generateOTPURI}
+          verifyOTPURI={otpFlowData.verifyOTPURI}
+          authorizeURI={otpFlowData.authorizeURI}
+          tranCtx={otpFlowData.tranCtx}
+          merchantTxnNo={otpFlowData.merchantTxnNo}
+        />
+      )}
     </div>
   );
 };

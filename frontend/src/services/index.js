@@ -92,9 +92,15 @@ export const paymentService = {
   createRazorpayOrder: (orderId) => api.post('/payment/create-order', { orderId }),
   verifyPayment: (data) => api.post('/payment/verify-payment', data),
   handleFailure: (data) => api.post('/payment/payment-failed', data),
-  
+
   // ICICI Gateway endpoints
   initiateICICIPayment: (orderId) => api.post('/payment/icici/initiate', { orderId }),
+  initiateICICIDirectPayment: (data) => api.post('/payment/icici/initiate', data),
+  getCardBin: (cardNo) => api.post('/payment/icici/bin', { cardNo }),
+  validatePaymentAndOffer: (data) => api.post('/payment/icici/validate-payment-offer', data),
+  generateOTP: (generateOTPURI, tranCtx) => api.get('/payment/icici/otp/generate', { params: { generateOTPURI, tranCtx } }),
+  verifyOTP: (verifyOTPURI, tranCtx, otp) => api.post('/payment/icici/otp/verify', { verifyOTPURI, tranCtx, otp }),
+  authorizePayment: (authorizeURI, tranCtx) => api.post('/payment/icici/authorize', { authorizeURI, tranCtx }),
   checkICICIPaymentStatus: (orderId) => api.post('/payment/icici/status', { orderId }),
   generateICICIQR: (orderId) => api.post('/payment/icici/qr', { orderId }),
 };

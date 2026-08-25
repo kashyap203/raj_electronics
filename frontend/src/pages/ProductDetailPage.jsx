@@ -22,6 +22,7 @@ import BankOffers from '../components/BankOffers';
 import { productService } from '../services';
 import { formatPrice, getDiscountedPrice } from '../utils/helpers';
 import { useAuth, useCart } from '../context/AppContext';
+import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 
 const ProductDetailPage = () => {
   const API_URL = import.meta.env.VITE_API_URL;
@@ -29,6 +30,7 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, applyOfferToCart } = useCart();
+  const { addRecentlyViewed } = useRecentlyViewed();
 
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -50,16 +52,19 @@ const ProductDetailPage = () => {
     setActiveImage(0);
     setCartSuccess(false);
     Promise.all([
-      productService.getById(id), 
+      productService.getById(id),
       productService.getRelated(id)
     ])
       .then(([p, r]) => {
         setProduct(p.data);
         setRelated(r.data);
+        if (p.data && p.data._id) {
+          addRecentlyViewed(p.data._id);
+        }
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, addRecentlyViewed]);
 
   if (loading) return <Loader />;
   if (!product) return null;
@@ -453,8 +458,8 @@ const ProductDetailPage = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition ${activeTab === tab.id
-                  ? 'border-primary text-primary bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-800'
+                ? 'border-primary text-primary bg-white'
+                : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
             >
               {tab.label}

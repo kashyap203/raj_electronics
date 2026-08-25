@@ -74,7 +74,7 @@ const ProductsAdminPage = () => {
       description: p.description, featured: p.featured, bestSelling: p.bestSelling,
       specifications: specs, features: Array.isArray(p.features) ? p.features.join('\n') : '',
       offers: p.offers?.map(o => (typeof o === 'string' ? o : o._id)) || [],
-      bankDiscounts: p.bankDiscounts || [],
+      bankDiscounts: p.bankDiscounts?.map(d => ({ ...d, bank: d.bank?._id || d.bank })) || [],
     });
     setExistingImages(p.images || []);
     setImages([]);

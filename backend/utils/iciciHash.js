@@ -44,19 +44,14 @@ export const generateICICIV2Hash = (params, secretKey) => {
   const payload = { ...params };
   delete payload.secureHash;
 
+  // For V2, we need a minified JSON string
   const hashInput = JSON.stringify(payload);
   
-  console.log("HASH INPUT STRING:");
-  console.log(hashInput);
-
   const hash = crypto
     .createHmac('sha256', secretKey)
     .update(hashInput, 'utf-8')
     .digest('hex')
     .toLowerCase();
-
-  console.log("GENERATED HASH:");
-  console.log(hash);
   
   return hash;
 };
@@ -72,5 +67,14 @@ export const verifyICICIHash = (params, receivedHash, secretKey) => {
   if (!receivedHash) return false;
   
   const generatedHash = generateICICIHash(params, secretKey);
-  return generatedHash === receivedHash.toLowerCase();
+  
+  try {
+    const a = Buffer.from(generatedHash, 'utf8');
+    const b = Buffer.from(receivedHash.toLowerCase(), 'utf8');
+    
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  } catch (e) {
+    return false;
+  }
 };

@@ -20,35 +20,35 @@ const CartPage = () => {
     if (!item.product) return;
     const price = getDiscountedPrice(item.product.price, item.product.discount);
     const itemSubtotal = price * item.quantity;
-    
+
     if (item.appliedOffer) {
-       const offer = item.appliedOffer;
-       if (itemSubtotal >= (offer.minTransactionAmount || 0)) {
-         let discount = 0;
-         if (offer.discountType === 'amount') {
-           discount = offer.discountValue;
-         } else {
-           discount = (itemSubtotal * offer.discountValue) / 100;
-         }
-         discount = Math.min(discount, offer.maxDiscountAmount || Infinity);
-         totalOfferDiscount += discount;
-       }
+      const offer = item.appliedOffer;
+      if (itemSubtotal >= (offer.minTransactionAmount || 0)) {
+        let discount = 0;
+        if (offer.discountType === 'amount') {
+          discount = offer.discountValue;
+        } else {
+          discount = (itemSubtotal * offer.discountValue) / 100;
+        }
+        discount = Math.min(discount, offer.maxDiscountAmount || Infinity);
+        totalOfferDiscount += discount;
+      }
     } else if (item.appliedBankDiscount) {
-       const bankDiscount = item.appliedBankDiscount;
-       if (bankDiscount.isActive) {
-         if (!bankDiscount.minTransactionAmount || itemSubtotal >= bankDiscount.minTransactionAmount) {
-           let discount = 0;
-           if (bankDiscount.discountType === 'amount') {
-             discount = bankDiscount.discountValue;
-           } else {
-             discount = (itemSubtotal * bankDiscount.discountValue) / 100;
-           }
-           if (bankDiscount.maxDiscountAmount) {
-             discount = Math.min(discount, bankDiscount.maxDiscountAmount);
-           }
-           totalOfferDiscount += discount;
-         }
-       }
+      const bankDiscount = item.appliedBankDiscount;
+      if (bankDiscount.isActive) {
+        if (!bankDiscount.minTransactionAmount || itemSubtotal >= bankDiscount.minTransactionAmount) {
+          let discount = 0;
+          if (bankDiscount.discountType === 'amount') {
+            discount = bankDiscount.discountValue;
+          } else {
+            discount = (itemSubtotal * bankDiscount.discountValue) / 100;
+          }
+          if (bankDiscount.maxDiscountAmount) {
+            discount = Math.min(discount, bankDiscount.maxDiscountAmount);
+          }
+          totalOfferDiscount += discount;
+        }
+      }
     }
   });
 

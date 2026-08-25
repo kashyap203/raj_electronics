@@ -6,6 +6,54 @@ import HeroSlider from '../components/HeroSlider';
 import { Loader } from '../components/common';
 import { productService, categoryService, brandService } from '../services';
 import { getImageUrl } from '../utils/helpers';
+import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+
+const brandLogosMap = {
+  'Samsung': 'https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg',
+  'LG': 'https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg',
+  'Sony': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg',
+  'Whirlpool': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Whirlpool_Corporation_logo.svg',
+  'Panasonic': 'https://upload.wikimedia.org/wikipedia/commons/7/71/Panasonic_logo_%28Blue%29.svg',
+  'Haier': 'https://upload.wikimedia.org/wikipedia/commons/3/36/Haier_logo.svg',
+};
+
+const ProductSection = ({ title, products, link, expandable }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!products || products.length === 0) return null;
+
+  const displayedProducts = (expandable && !expanded) ? products.slice(0, 4) : products;
+
+  return (
+    <section className="mb-12 animate-slide-up">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+        {link && (
+          <Link to={link} className="text-primary hover:underline font-medium text-sm">
+            View All &rarr;
+          </Link>
+        )}
+      </div>
+      <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide md:grid md:grid-cols-3 lg:grid-cols-4 snap-x">
+        {displayedProducts.map((p) => (
+          <div key={p._id} className="min-w-[280px] md:min-w-0 snap-start flex-shrink-0">
+            <ProductCard product={p} />
+          </div>
+        ))}
+      </div>
+      {expandable && products.length > 4 && (
+        <div className="text-center mt-6">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="border-2 border-primary text-primary font-bold px-8 py-2.5 rounded-full hover:bg-primary hover:text-dark transition text-sm"
+          >
+            {expanded ? 'Show Less' : `Show ${products.length - 4} More`}
+          </button>
+        </div>
+      )}
+    </section>
+  );
+};
 
 const HomePage = () => {
   const [featured, setFeatured] = useState([]);
@@ -13,33 +61,48 @@ const HomePage = () => {
   const [bestSelling, setBestSelling] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [recentProducts, setRecentProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
 
-  const brandLogosMap = {
-    'Samsung': 'https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg',
-    'LG': 'https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg',
-    'Sony': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg',
-    'Whirlpool': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Whirlpool_Corporation_logo.svg',
-    'Panasonic': 'https://upload.wikimedia.org/wikipedia/commons/7/71/Panasonic_logo_%28Blue%29.svg',
-    'Haier': 'https://upload.wikimedia.org/wikipedia/commons/3/36/Haier_logo.svg',
-  };
+  const { recentlyViewed } = useRecentlyViewed();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [featRes, latestRes, bestRes, catRes, brandRes] = await Promise.all([
+        const promises = [
           productService.getAll({ featured: true, limit: 8 }),
           productService.getAll({ sort: 'latest', limit: 8 }),
           productService.getAll({ bestSelling: true, limit: 8 }),
           categoryService.getAll(),
           brandService.getAll()
-        ]);
-        setFeatured(featRes?.data?.products || []);
-        setLatest(latestRes?.data?.products || []);
-        setBestSelling(bestRes?.data?.products || []);
-        setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
-        setBrands(Array.isArray(brandRes?.data) ? brandRes.data : []);
+        ];
+
+        // Fetch recently viewed if they exist in local storage
+        if (recentlyViewed && recentlyViewed.length > 0) {
+          promises.push(productService.getAll({ ids: recentlyViewed.join(','), limit: 10 }));
+        }
+
+        const results = await Promise.all(promises);
+
+        setFeatured(results[0]?.data?.products || []);
+        setLatest(results[1]?.data?.products || []);
+        setBestSelling(results[2]?.data?.products || []);
+        setCategories(Array.isArray(results[3]?.data) ? results[3].data : []);
+        setBrands(Array.isArray(results[4]?.data) ? results[4].data : []);
+
+        if (recentlyViewed && recentlyViewed.length > 0 && results[5]?.data?.products) {
+          const unsortedRecents = results[5].data.products;
+          // Sort them to match the exact order in recentlyViewed array (newest first)
+          const sortedRecents = unsortedRecents.sort((a, b) => {
+            const indexA = recentlyViewed.indexOf(a._id);
+            const indexB = recentlyViewed.indexOf(b._id);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+          });
+          setRecentProducts(sortedRecents);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -47,23 +110,7 @@ const HomePage = () => {
       }
     };
     fetchData();
-  }, []);
-
-  const ProductSection = ({ title, products, link }) => (
-    <section className="mb-12 animate-slide-up">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-        <Link to={link} className="text-primary hover:underline font-medium text-sm">
-          View All &rarr;
-        </Link>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {(products || []).map((p) => (
-          <ProductCard key={p._id} product={p} />
-        ))}
-      </div>
-    </section>
-  );
+  }, [recentlyViewed.length > 0]);
 
   if (loading) return <Loader />;
 
@@ -121,8 +168,7 @@ const HomePage = () => {
           </div>
         </section>
 
-
-
+        {recentProducts.length > 0 && <ProductSection title="Recently Viewed" products={recentProducts} expandable={true} />}
         {latest.length > 0 && <ProductSection title="Latest Products" products={latest} link="/products?sort=latest" />}
         {bestSelling.length > 0 && <ProductSection title="Best Selling" products={bestSelling} link="/products?bestSelling=true" />}
         {featured.length > 0 && <ProductSection title="Featured Products" products={featured} link="/products?featured=true" />}
