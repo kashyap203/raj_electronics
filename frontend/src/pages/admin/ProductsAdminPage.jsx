@@ -8,7 +8,7 @@ import ProductEmiManager from '../../components/admin/ProductEmiManager';
 import ProductEmiConfig from '../../components/admin/ProductEmiConfig';
 
 const EMPTY_FORM = {
-  name: '', brand: '', category: '', price: '', stock: '',
+  name: '', brand: '', category: '', price: '', stock: '', discount: '',
   description: '', featured: false, bestSelling: false,
   specifications: '', features: '', offers: [], bankDiscounts: [],
   emiConfig: { enableEmi: false, availableTenures: [], baseInterestRate: 15, processingFee: 0, minEmiAmount: 3000 }
@@ -73,7 +73,7 @@ const ProductsAdminPage = () => {
     const specs = p.specifications && typeof p.specifications === 'object' ? Object.entries(p.specifications).map(([k, v]) => `${k}: ${v}`).join('\n') : '';
     setForm({
       name: p.name, brand: p.brand?._id || '', category: p.category?._id || '',
-      price: p.price, stock: p.stock,
+      price: p.price, stock: p.stock, discount: p.discount || '',
       description: p.description, featured: p.featured, bestSelling: p.bestSelling,
       specifications: specs, features: Array.isArray(p.features) ? p.features.join('\n') : '',
       offers: p.offers?.map(o => (typeof o === 'string' ? o : o._id)) || [],
@@ -263,6 +263,11 @@ const ProductsAdminPage = () => {
                 <div>
                   <label className="block text-sm font-medium mb-1">Stock*</label>
                   <input required type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Discount (%)</label>
+                  <input type="number" min="0" max="100" value={form.discount} onChange={e => setForm(f => ({ ...f, discount: e.target.value }))}
                     className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
                 </div>
                 <div className="flex gap-4 items-center">

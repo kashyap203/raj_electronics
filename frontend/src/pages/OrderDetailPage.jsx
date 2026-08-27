@@ -22,7 +22,9 @@ const OrderDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState("");
-  const justPlaced = location.state?.success;
+  const searchParams = new URLSearchParams(location.search);
+  const justPlaced = location.state?.success || searchParams.get('payment_success') === 'true';
+  const isPaymentSuccess = location.state?.paymentSuccess || searchParams.get('payment_success') === 'true' || order?.isPaid;
 
   useEffect(() => {
     const fetchOrder = async () => {

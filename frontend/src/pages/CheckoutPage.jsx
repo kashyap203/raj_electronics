@@ -6,8 +6,8 @@ import { orderService, deliveryCityService, paymentService } from '../services';
 import { formatPrice, getDiscountedPrice, getImageUrl } from '../utils/helpers';
 import { Alert } from '../components/common';
 import CardPaymentForm from '../components/payment/CardPaymentForm';
-import EmiCardPaymentForm from '../components/payment/EmiCardPaymentForm';
 import OTPCaptureModal from '../components/payment/OTPCaptureModal';
+import CreditCardEMI from '../components/CreditCardEMI';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -25,7 +25,7 @@ const CheckoutPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const emiPlan = location.state?.emiPlan || null;
+  const initiateEmi = location.state?.initiateEmi || false;
 
   const [address, setAddress] = useState({
     fullName: user?.name || '',
@@ -35,7 +35,7 @@ const CheckoutPage = () => {
     state: '',
     pincode: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState(emiPlan ? 'EMI (ICICI Gateway)' : 'Cash on Delivery');
+  const [paymentMethod, setPaymentMethod] = useState(initiateEmi ? 'Credit Card EMI' : 'Cash on Delivery');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -115,7 +115,7 @@ const CheckoutPage = () => {
   );
   const shipping = address.city ? (isFreeDelivery ? 0 : 99) : 99;
   const standardTotal = Math.max(0, subtotal - couponDiscount - totalOfferDiscount) + shipping;
-  const total = emiPlan ? emiPlan.finalPayable + shipping : standardTotal;
+  const total = standardTotal;
 
   const applyCoupon = () => {
     if (couponCode.trim().toUpperCase() === 'DISCOUNT10') {
@@ -131,12 +131,42 @@ const CheckoutPage = () => {
   const handleOtpSuccess = async (authData) => {
     setIsOtpModalOpen(false);
     if (authData.paymentStatus === 'PAID') {
-      // Force a hard browser redirect to guarantee the Order Details page loads.
-      // This bypasses any React Router state/unmount hanging issues.
       window.location.href = `/profile/orders/${authData.orderId}?icici_payment=PAID`;
     } else {
       setError("Payment failed during authorization.");
     }
+  };
+
+  const handleCreateEmiOrder = async (emiQuote) => {
+    if (items.length === 0) throw new Error('Your cart is empty');
+    if (!address.fullName || !address.street || !address.city || !address.state || !address.pincode || !address.phone) {
+      throw new Error('Please fill in all address details before placing order');
+    }
+
+    const orderItems = items
+      .filter(item => item.product && item.product._id)
+      .map(item => ({ product: item.product._id, quantity: item.quantity }));
+
+    const emiDetails = {
+      isEmiOrder: true,
+      emiOfferId: emiQuote.emiPlanId,
+      tenureMonths: emiQuote.tenureMonths,
+      bankName: 'Selected EMI Bank',
+      emiType: 'CREDIT_CARD',
+      monthlyEmi: emiQuote.monthlyEmi,
+      totalInterest: emiQuote.totalInterest,
+      discountAmount: 0
+    };
+
+    const { data: createdOrder } = await orderService.create({
+      orderItems,
+      address,
+      paymentMethod: 'EMI',
+      couponCode: appliedCoupon || undefined,
+      emiDetails
+    });
+
+    return createdOrder._id;
   };
 
   const handleSubmit = async (e) => {
@@ -154,18 +184,6 @@ const CheckoutPage = () => {
       const actualPaymentMethod = paymentMethod === 'EMI (ICICI Gateway)' ? 'EMI' : (isOnline ? (paymentMethod === 'Online Payment (ICICI)' ? 'Online Payment (ICICI Card)' : 'Online Payment (Razorpay)') : 'Cash on Delivery');
 
       let emiDetails = undefined;
-      if (emiPlan) {
-        emiDetails = {
-          isEmiOrder: true,
-          emiOfferId: emiPlan.isBaseEmi ? null : emiPlan._id,
-          tenureMonths: emiPlan.tenure,
-          bankName: emiPlan.bankName,
-          emiType: emiPlan.emiType,
-          monthlyEmi: emiPlan.monthlyEMI,
-          totalInterest: emiPlan.totalInterest,
-          discountAmount: emiPlan.totalDiscount
-        };
-      }
 
       // 1. Create order record in backend
       const { data: createdOrder } = await orderService.create({
@@ -285,7 +303,7 @@ const CheckoutPage = () => {
 
       razorpayInstance.on('payment.failed', async function (response) {
         const errorDesc = response.error?.description || '';
-        
+
         // Intercept 'CC is disabled' or similar test merchant errors to simulate success
         if (errorDesc.includes('CC is disabled') || errorDesc.includes('merchant')) {
           try {
@@ -322,7 +340,7 @@ const CheckoutPage = () => {
       razorpayInstance.open();
     } catch (err) {
       const errMsg = err.response?.data?.message || err.message || 'Something went wrong';
-      
+
       if (errMsg.includes('CC is disabled') || errMsg.includes('merchant')) {
         try {
           await paymentService.verifyPayment({
@@ -342,7 +360,7 @@ const CheckoutPage = () => {
         }
         return;
       }
-      
+
       setError(errMsg);
       setLoading(false);
     }
@@ -410,6 +428,13 @@ const CheckoutPage = () => {
                     badge: 'Secure',
                     desc: 'Pay securely using ICICI Bank Orange Gateway',
                   },
+                  {
+                    value: 'Credit Card EMI',
+                    label: 'Credit Card EMI',
+                    icon: FaCreditCard,
+                    badge: 'Easy Installments',
+                    desc: 'Pay in easy installments using your credit card',
+                  },
                 ].map(opt => (
                   <div key={opt.value} className={`rounded-xl border-2 transition overflow-hidden ${paymentMethod === opt.value ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
                     <label className="flex items-start gap-4 p-4 cursor-pointer">
@@ -441,14 +466,19 @@ const CheckoutPage = () => {
                     />
                   </div>
                 )}
-                
-                {/* Embedded EMI Card Form if EMI is selected */}
-                {paymentMethod === 'EMI (ICICI Gateway)' && (
-                  <div className="mt-4 animate-in slide-in-from-top-4 fade-in duration-300">
-                    <EmiCardPaymentForm
-                      onValidCardData={(data) => setValidCardData(data)}
-                      disabled={loading}
-                      emiPlan={emiPlan}
+
+                {/* Embedded EMI Flow if EMI is selected */}
+                {paymentMethod === 'Credit Card EMI' && (
+                  <div className="mt-4 border-t pt-4">
+                    <CreditCardEMI
+                      cartId={cart._id}
+                      orderAmount={subtotal - couponDiscount + shipping}
+                      onCreateOrder={handleCreateEmiOrder}
+                      onSuccess={(data) => {
+                        navigate(`/profile/orders/${data.orderId || 'success'}?payment_success=true`, { state: { success: true } });
+                      }}
+                      onError={(msg) => setError(msg)}
+                      onCancel={() => setPaymentMethod('Cash on Delivery')}
                     />
                   </div>
                 )}
@@ -535,13 +565,15 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading || ((paymentMethod === 'Online Payment (ICICI)' || paymentMethod === 'EMI (ICICI Gateway)') && !validCardData)}
-                className="w-full bg-primary hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed text-dark font-bold py-3 rounded-xl transition mt-4"
-              >
-                {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
-              </button>
+              {paymentMethod !== 'Credit Card EMI' && (
+                <button
+                  type="submit"
+                  disabled={loading || (paymentMethod === 'Online Payment (ICICI)' && !validCardData)}
+                  className="w-full bg-primary hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed text-dark font-bold py-3 rounded-xl transition mt-4"
+                >
+                  {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
+                </button>
+              )}
             </div>
           </div>
         </div>

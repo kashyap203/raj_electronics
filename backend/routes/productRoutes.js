@@ -66,7 +66,7 @@ router.post('/:id/serial-numbers', protect, admin, addSerialNumber);
 router.put('/:id/serial-numbers/:snId', protect, admin, updateSerialNumber);
 router.delete('/:id/serial-numbers/:snId', protect, admin, deleteSerialNumber);
 
-import { getProductEmiOffers, createProductEmiOffer, getEligibleProductEmiOffers } from '../controllers/productEmiController.js';
+import { getProductEmiOffers, createProductEmiOffer, getEligibleProductEmiOffers, createBatchProductEmiOffers, deleteProductEmiBankOffers } from '../controllers/productEmiController.js';
 
 router.get('/:id/bank-discounts', getBankDiscounts);
 router.post('/:id/bank-discounts', protect, admin, addBankDiscount);
@@ -75,6 +75,8 @@ router.delete('/:id/bank-discounts/:discountId', protect, admin, deleteBankDisco
 
 router.get('/:id/emi-offers', getProductEmiOffers);
 router.post('/:id/emi-offers', protect, admin, createProductEmiOffer);
+router.post('/:id/emi-offers/batch', protect, admin, createBatchProductEmiOffers);
+router.delete('/:id/emi-offers/bank/:bankName', protect, admin, deleteProductEmiBankOffers);
 router.get('/:id/eligible-emis', getEligibleProductEmiOffers);
 
 export default router;

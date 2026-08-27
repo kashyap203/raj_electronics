@@ -20,6 +20,7 @@ import offerRoutes from './routes/offerRoutes.js';
 import sliderRoutes from './routes/sliderRoutes.js';
 import emiRoutes from './routes/emiRoutes.js';
 import productEmiRoutes from './routes/productEmiRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 
 
@@ -61,6 +62,7 @@ app.use('/api/offers', offerRoutes);
 app.use('/api/sliders', sliderRoutes);
 app.use('/api/emi', emiRoutes);
 app.use('/api/emi-offers', productEmiRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import ProductEmiOffer from '../models/ProductEmiOffer.js';
 import Product from '../models/Product.js';
 import { getEligibleEMIPlans } from '../services/emiCalculationService.js';
@@ -23,9 +24,9 @@ export const getEligibleProductEmiOffers = async (req, res) => {
 // @access  Public
 export const getProductEmiOffers = async (req, res) => {
   try {
-    const offers = await ProductEmiOffer.find({ 
-      product: req.params.id, 
-      active: true 
+    const offers = await ProductEmiOffer.find({
+      product: req.params.id,
+      active: true
     }).sort({ priority: 1 });
 
     const now = new Date();
@@ -106,5 +107,96 @@ export const deleteProductEmiOffer = async (req, res) => {
   } catch (error) {
     console.error("Error deleting EMI offer:", error);
     res.status(500).json({ message: 'Error deleting EMI offer' });
+  }
+};
+
+// @desc    Create/Update a batch of Product EMI offers for a specific bank (Admin)
+// @route   POST /api/products/:id/emi-offers/batch
+// @access  Private/Admin
+export const createBatchProductEmiOffers = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { bankName, offers } = req.body;
+    const productId = req.params.id;
+
+    if (!bankName || !offers || !Array.isArray(offers)) {
+      throw new Error('Invalid batch data');
+    }
+
+    const product = await Product.findById(productId).session(session);
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    // Delete existing offers for this product and bank
+    const deletedOffers = await ProductEmiOffer.find({ product: productId, bankName }).session(session);
+    const deletedIds = deletedOffers.map(o => o._id);
+
+    await ProductEmiOffer.deleteMany({ product: productId, bankName }).session(session);
+
+    // Remove deleted IDs from product.emiOffers
+    if (deletedIds.length > 0) {
+      product.emiOffers = product.emiOffers.filter(id => !deletedIds.some(dId => dId.equals(id)));
+    }
+
+    // Insert new offers
+    if (offers.length > 0) {
+      const offersToCreate = offers.map(o => ({
+        ...o,
+        product: productId,
+        bankName
+      }));
+
+      const createdOffers = await ProductEmiOffer.insertMany(offersToCreate, { session });
+      const createdIds = createdOffers.map(o => o._id);
+
+      product.emiOffers.push(...createdIds);
+    }
+
+    await product.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(201).json({ message: 'Batch saved successfully' });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    res.status(500).json({ message: error.message || 'Error saving batch EMI offers' });
+  }
+};
+
+// @desc    Delete all Product EMI offers for a specific bank (Admin)
+// @route   DELETE /api/products/:id/emi-offers/bank/:bankName
+// @access  Private/Admin
+export const deleteProductEmiBankOffers = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const productId = req.params.id;
+    const bankName = decodeURIComponent(req.params.bankName);
+
+    const deletedOffers = await ProductEmiOffer.find({ product: productId, bankName }).session(session);
+    const deletedIds = deletedOffers.map(o => o._id);
+
+    if (deletedIds.length > 0) {
+      await ProductEmiOffer.deleteMany({ product: productId, bankName }).session(session);
+
+      await Product.updateOne(
+        { _id: productId },
+        { $pull: { emiOffers: { $in: deletedIds } } },
+        { session }
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.json({ message: 'Bank offers removed' });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    res.status(500).json({ message: error.message || 'Error deleting bank offers' });
   }
 };

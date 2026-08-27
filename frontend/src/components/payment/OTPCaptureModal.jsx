@@ -106,12 +106,18 @@ const OTPCaptureModal = ({ isOpen, onClose, onVerifySuccess, generateOTPURI, ver
           )}
 
           {!successMessage && (
-            <form onSubmit={handleVerify}>
+            <div>
               <div className="mb-6">
                 <input
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && otp.length >= 4 && !loading) {
+                      e.preventDefault();
+                      handleVerify(e);
+                    }
+                  }}
                   placeholder="Enter 4 or 6 digit OTP"
                   className="w-full text-center text-2xl tracking-[0.5em] border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-mono"
                   disabled={loading}
@@ -119,7 +125,8 @@ const OTPCaptureModal = ({ isOpen, onClose, onVerifySuccess, generateOTPURI, ver
               </div>
 
               <button
-                type="submit"
+                type="button"
+                onClick={handleVerify}
                 disabled={loading || otp.length < 4}
                 className="w-full bg-primary hover:bg-primary-dark text-dark font-bold py-3 rounded-xl transition disabled:opacity-60 flex justify-center items-center gap-2"
               >
@@ -127,7 +134,7 @@ const OTPCaptureModal = ({ isOpen, onClose, onVerifySuccess, generateOTPURI, ver
                   <div className="w-5 h-5 border-2 border-dark border-t-transparent rounded-full animate-spin"></div>
                 ) : 'Verify & Pay'}
               </button>
-            </form>
+            </div>
           )}
 
           {!successMessage && (

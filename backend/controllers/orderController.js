@@ -223,7 +223,7 @@ export const createOrder = async (req, res) => {
       couponCode: couponCode === 'DISCOUNT10' ? couponCode : null,
       couponDiscount,
       creditCardDiscountAmount: totalCreditCardDiscount,
-      total: emiSnapshot ? emiSnapshot.finalPayableAmount : total,
+      total: emiSnapshot ? emiSnapshot.eligibleAmount : total,
       address,
       paymentMethod,
       orderType,

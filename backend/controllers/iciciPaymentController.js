@@ -415,10 +415,20 @@ export const authorizePayment = async (req, res) => {
         order.status = 'Confirmed';
         order.paymentDetails.paymentStatus = 'PAID';
         order.paymentDetails.transactionId = 'SIM_TXN_' + Date.now();
-        order.paymentDetails.responseCode = '0000';
         order.paymentDetails.responseDescription = 'Simulated Success';
         await order.save();
         console.log('[ICICI DEV MODE] Order marked as PAID:', order._id);
+
+        try {
+          const ptModule = await import('../models/PaymentTransaction.js');
+          const PaymentTransaction = ptModule.default;
+          await PaymentTransaction.findOneAndUpdate(
+            { merchantTxnNo: order.paymentDetails.merchantTxnNo },
+            { $set: { paymentStatus: 'SUCCESS', iciciTxnId: order.paymentDetails.transactionId } }
+          );
+        } catch (e) {
+          console.error('[ICICI DEV MODE] Error updating PaymentTransaction:', e);
+        }
       } else {
         console.log('[ICICI DEV MODE] Order not found or not PENDING. Status:', order?.paymentDetails?.paymentStatus);
       }

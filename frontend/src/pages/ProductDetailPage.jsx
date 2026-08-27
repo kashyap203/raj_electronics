@@ -126,7 +126,7 @@ const ProductDetailPage = () => {
     }
   };
 
-  const handleBuyWithEmi = async (selectedEmiPlan) => {
+  const handleBuyWithEmi = async () => {
     if (!user) return navigate('/login');
     setCartLoading(true);
     try {
@@ -137,8 +137,8 @@ const ProductDetailPage = () => {
 
       await addToCart(product._id, quantity, offerId, bankDiscountId);
       
-      // Store EMI configuration in session state for Checkout
-      navigate('/checkout', { state: { emiPlan: selectedEmiPlan } });
+      // Navigate to checkout and flag to start EMI flow
+      navigate('/checkout', { state: { initiateEmi: true } });
     } catch (err) {
       alert(err.response?.data?.message || 'Error initiating EMI purchase');
       setCartLoading(false);
@@ -441,7 +441,7 @@ const ProductDetailPage = () => {
               <div className="space-y-2.5 mb-5">
                 {emiOffers.length > 0 && (
                   <button
-                    onClick={() => setShowEmiModal(true)}
+                    onClick={handleBuyWithEmi}
                     disabled={product.stock === 0 || cartLoading}
                     className="w-full bg-[#FFD700] hover:bg-[#F2C800] disabled:opacity-50 text-dark font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2 text-sm leading-tight"
                   >
@@ -664,14 +664,6 @@ const ProductDetailPage = () => {
         </section>
       )}
 
-      <EmiSelectionModal
-        isOpen={showEmiModal}
-        onClose={() => setShowEmiModal(false)}
-        product={product}
-        price={finalPrice}
-        emiPlans={emiOffers}
-        onContinue={handleBuyWithEmi}
-      />
     </div>
   );
 };
