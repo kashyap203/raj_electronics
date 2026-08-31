@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { FaShoppingBag, FaMapMarkerAlt, FaCreditCard, FaCheckCircle, FaFileInvoice } from 'react-icons/fa';
-import { orderService } from '../services';
+import { orderService, paymentService } from '../services';
 import { Loader, Alert, Breadcrumb } from '../components/common';
 import { formatPrice, getImageUrl } from '../utils/helpers';
 
@@ -23,32 +23,51 @@ const OrderDetailPage = () => {
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState("");
   const searchParams = new URLSearchParams(location.search);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
   const justPlaced = location.state?.success || searchParams.get('payment_success') === 'true';
   const isPaymentSuccess = location.state?.paymentSuccess || searchParams.get('payment_success') === 'true' || order?.isPaid;
+
+  const verifyPineLabsPayment = async (orderId) => {
+    setVerifyingPayment(true);
+    try {
+      const statusRes = await paymentService.checkPineLabsStatus(orderId);
+      const updated = await orderService.getById(orderId);
+      setOrder(updated.data);
+      return statusRes.data;
+    } finally {
+      setVerifyingPayment(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
         const { data } = await orderService.getById(id);
         setOrder(data);
-        
-        // Check ICICI Status if returning from Gateway or if pending
+
         const searchParams = new URLSearchParams(location.search);
         const isIciciReturn = searchParams.get('icici_payment');
-        
+
         if (data && data.paymentDetails?.gateway === 'ICICI_ORANGE_PG' && (isIciciReturn || data.paymentDetails?.paymentStatus === 'PENDING')) {
-          const { paymentService } = await import('../services/index.js');
           const statusRes = await paymentService.checkICICIPaymentStatus(id);
           if (statusRes.data && statusRes.data.paymentStatus) {
-            // Re-fetch order to get updated status
             const updated = await orderService.getById(id);
             setOrder(updated.data);
-            
-            // Remove query param from URL without reloading
+
             if (isIciciReturn) {
               window.history.replaceState({}, '', window.location.pathname);
             }
           }
+        }
+
+        // Pine Labs: auto-verify pending online payments
+        const isPineLabs = data?.paymentDetails?.gateway === 'PINE_LABS';
+        const isPendingPineLabs = isPineLabs && !data.isPaid && data.paymentDetails?.paymentStatus !== 'Success';
+        const pendingFromStorage = sessionStorage.getItem('pineLabsPendingOrderId') === id;
+
+        if (isPineLabs && (isPendingPineLabs || pendingFromStorage)) {
+          await verifyPineLabsPayment(id);
+          sessionStorage.removeItem('pineLabsPendingOrderId');
         }
       } catch (err) {
         setError("Order not found");
@@ -299,17 +318,34 @@ const OrderDetailPage = () => {
                 ICICI Txn No: {order.paymentDetails.merchantTxnNo}
               </p>
             )}
+            {order.paymentDetails?.gateway === 'PINE_LABS' && order.paymentDetails?.merchantTxnNo && (
+              <p className="text-xs text-gray-500 mt-1 font-mono">
+                Pine Labs Ref: {order.paymentDetails.merchantTxnNo}
+              </p>
+            )}
             <p
               className={`text-sm font-semibold mt-2 flex items-center gap-1.5 ${
-                order.isPaid ? 'text-green-600' : (order.paymentDetails?.paymentStatus === 'Failed' || order.paymentDetails?.paymentStatus === 'FAILED') ? 'text-red-600' : 'text-amber-600'
+                order.isPaid ? 'text-green-600' : (order.paymentDetails?.paymentStatus === 'Failed' || order.paymentDetails?.paymentStatus === 'FAILED' || order.paymentDetails?.paymentStatus === 'PAYMENT_FAILED') ? 'text-red-600' : 'text-amber-600'
               }`}
             >
               {order.isPaid
                 ? `✓ Paid on ${new Date(order.paidAt).toLocaleDateString('en-IN')}`
-                : (order.paymentDetails?.paymentStatus === 'Failed' || order.paymentDetails?.paymentStatus === 'FAILED')
+                : (order.paymentDetails?.paymentStatus === 'Failed' || order.paymentDetails?.paymentStatus === 'FAILED' || order.paymentDetails?.paymentStatus === 'PAYMENT_FAILED')
                 ? `✗ Payment Failed: ${order.paymentDetails.failureReason || 'Declined'}`
+                : order.paymentDetails?.gateway === 'PINE_LABS'
+                ? '● Payment Pending — verifying with Pine Labs'
                 : '● Payment Pending'}
             </p>
+            {order.paymentDetails?.gateway === 'PINE_LABS' && !order.isPaid && (
+              <button
+                type="button"
+                onClick={() => verifyPineLabsPayment(id)}
+                disabled={verifyingPayment}
+                className="mt-3 w-full bg-primary hover:bg-primary-dark disabled:opacity-60 text-dark text-sm font-bold py-2.5 rounded-xl transition"
+              >
+                {verifyingPayment ? 'Verifying payment...' : 'Verify Payment Status'}
+              </button>
+            )}
           </div>
 
           {order.orderType === 'EMI_ORDER' && order.emiDetails && (

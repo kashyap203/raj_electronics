@@ -35,7 +35,7 @@ const CheckoutPage = () => {
     state: '',
     pincode: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState(initiateEmi ? 'Credit Card EMI' : 'Cash on Delivery');
+  const [paymentMethod, setPaymentMethod] = useState(initiateEmi ? 'Credit Card EMI' : 'Pine Labs Online');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -181,7 +181,14 @@ const CheckoutPage = () => {
         .map(item => ({ product: item.product._id, quantity: item.quantity }));
 
       const isOnline = paymentMethod !== 'Cash on Delivery';
-      const actualPaymentMethod = paymentMethod === 'EMI (ICICI Gateway)' ? 'EMI' : (isOnline ? (paymentMethod === 'Online Payment (ICICI)' ? 'Online Payment (ICICI Card)' : 'Online Payment (Razorpay)') : 'Cash on Delivery');
+      const isPineLabs = paymentMethod === 'Pine Labs Online';
+      const actualPaymentMethod = paymentMethod === 'EMI (ICICI Gateway)'
+        ? 'EMI'
+        : isPineLabs
+          ? 'Pine Labs Online'
+          : isOnline
+            ? (paymentMethod === 'Online Payment (ICICI)' ? 'Online Payment (ICICI Card)' : 'Online Payment (Razorpay)')
+            : 'Cash on Delivery';
 
       let emiDetails = undefined;
 
@@ -207,7 +214,25 @@ const CheckoutPage = () => {
         return;
       }
 
-      // 3. Online Payment Flow (Razorpay or ICICI)
+      // 2b. Pine Labs Online Payment — redirect to hosted checkout
+      if (isPineLabs) {
+        try {
+          const orderId = createdOrder._id || createdOrder.id;
+          const { data: pineData } = await paymentService.initiatePineLabsPayment(orderId);
+          if (pineData.success && pineData.redirectUrl) {
+            sessionStorage.setItem('pineLabsPendingOrderId', orderId);
+            window.location.href = pineData.redirectUrl;
+            return;
+          }
+          setError(pineData.message || 'Failed to initiate secure payment. Please try again.');
+        } catch (pineErr) {
+          setError(pineErr.response?.data?.message || pineErr.message || 'Failed to initiate secure payment.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // 3. Online Payment Flow (ICICI)
       if (paymentMethod === 'Online Payment (ICICI)') {
         if (!validCardData) {
           setError("Please complete the card details correctly.");
@@ -415,6 +440,13 @@ const CheckoutPage = () => {
               <div className="space-y-4">
                 {[
                   {
+                    value: 'Pine Labs Online',
+                    label: 'Pine Labs Secure Payment',
+                    icon: FaShieldAlt,
+                    badge: 'Recommended',
+                    desc: 'Pay securely via Card, UPI, or Net Banking (SBI for UAT)',
+                  },
+                  {
                     value: 'Cash on Delivery',
                     label: 'Cash on Delivery',
                     icon: FaMoneyBillWave,
@@ -423,10 +455,10 @@ const CheckoutPage = () => {
                   },
                   {
                     value: 'Online Payment (ICICI)',
-                    label: 'ICICI Orange PG',
-                    icon: FaShieldAlt,
-                    badge: 'Secure',
-                    desc: 'Pay securely using ICICI Bank Orange Gateway',
+                    label: 'ICICI Orange PG (Legacy)',
+                    icon: FaCreditCard,
+                    badge: 'Card Only',
+                    desc: 'Direct card payment via ICICI Bank Orange Gateway',
                   },
                   {
                     value: 'Credit Card EMI',
@@ -571,7 +603,11 @@ const CheckoutPage = () => {
                   disabled={loading || (paymentMethod === 'Online Payment (ICICI)' && !validCardData)}
                   className="w-full bg-primary hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed text-dark font-bold py-3 rounded-xl transition mt-4"
                 >
-                  {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
+                  {loading
+                    ? (paymentMethod === 'Pine Labs Online' ? 'Redirecting to secure payment...' : 'Processing...')
+                    : paymentMethod === 'Pine Labs Online'
+                      ? 'Proceed to Secure Payment'
+                      : `Pay ${formatPrice(total)}`}
                 </button>
               )}
             </div>

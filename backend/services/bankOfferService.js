@@ -103,7 +103,7 @@ export const checkBankOfferEligibility = async ({ cardNo, orderAmount, bankDisco
     }
 
     // If all pass, calculate discount securely
-    const rawDiscount = (orderAmount * discount.discountPercentage) / 100;
+    const rawDiscount = (orderAmount * (discount.discountValue || discount.discountPercentage || 0)) / 100;
     const finalDiscount = Math.min(rawDiscount, discount.maxDiscountAmount);
 
     return {

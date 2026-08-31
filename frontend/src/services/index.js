@@ -106,6 +106,20 @@ export const paymentService = {
   authorizePayment: (authorizeURI, tranCtx) => api.post('/payment/icici/authorize', { authorizeURI, tranCtx }),
   checkICICIPaymentStatus: (orderId) => api.post('/payment/icici/status', { orderId }),
   generateICICIQR: (orderId) => api.post('/payment/icici/qr', { orderId }),
+
+  // Pine Labs Online Payment Gateway
+  initiatePineLabsPayment: (orderId) => api.post('/payment/pinelabs/initiate', { orderId }),
+  checkPineLabsStatus: (orderId) => api.post('/payment/pinelabs/status', { orderId }),
+  previewCheckoutTotals: (data) => api.post('/payment/pinelabs/preview', data),
+  getBankOffersForCart: (bank) => api.get('/payment/pinelabs/bank-offers', { params: bank ? { bank } : {} }),
+};
+
+export const couponService = {
+  validate: (code, subtotal) => api.post('/coupons/validate', { code, subtotal }),
+  getAll: () => api.get('/coupons'),
+  create: (data) => api.post('/coupons', data),
+  update: (id, data) => api.put(`/coupons/${id}`, data),
+  delete: (id) => api.delete(`/coupons/${id}`),
 };
 
 export const offerService = {

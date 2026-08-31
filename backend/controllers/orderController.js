@@ -7,6 +7,8 @@ import OfferEligibility from '../models/OfferEligibility.js';
 import Offer from '../models/Offer.js';
 import ProductEmiOffer from '../models/ProductEmiOffer.js';
 import { calculateEMI } from '../services/emiCalculationService.js';
+import { calculateCheckoutTotals } from '../services/checkoutCalculationService.js';
+import { calculateBankDiscount } from '../services/bankOfferEngine.js';
 import { sendOrderStatusNotification } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 
@@ -144,11 +146,25 @@ export const createOrder = async (req, res) => {
     }
 
     let couponDiscount = 0;
-    if (couponCode === 'DISCOUNT10') {
-      couponDiscount = Math.round(itemsPrice * 0.1);
+    let bankDiscountAmount = 0;
+
+    if (isOnline) {
+      const { bankDiscount } = await calculateBankDiscount({ cartItems: cart.items, isOnlinePayment: true });
+      bankDiscountAmount = bankDiscount;
     }
 
-    const total = Math.max(0, itemsPrice - couponDiscount - totalCreditCardDiscount) + shippingPrice;
+    const checkoutTotals = await calculateCheckoutTotals({
+      cartItems: cart.items,
+      couponCode,
+      userId: req.user._id,
+      address,
+      isOnlinePayment: isOnline,
+    });
+
+    couponDiscount = checkoutTotals.couponDiscount;
+    bankDiscountAmount = checkoutTotals.bankDiscount;
+
+    const total = Math.max(0, itemsPrice - couponDiscount - bankDiscountAmount) + shippingPrice;
 
     // --- EMI Snapshot Construction ---
     let orderType = 'ONLINE_ORDER';
@@ -220,9 +236,10 @@ export const createOrder = async (req, res) => {
       products,
       itemsPrice,
       shippingPrice,
-      couponCode: couponCode === 'DISCOUNT10' ? couponCode : null,
+      couponCode: checkoutTotals.couponCode || null,
       couponDiscount,
       creditCardDiscountAmount: totalCreditCardDiscount,
+      bankDiscountAmount,
       total: emiSnapshot ? emiSnapshot.eligibleAmount : total,
       address,
       paymentMethod,
@@ -246,11 +263,20 @@ export const createOrder = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    // Trigger automated Order Confirmation notification
     const populatedOrder = await Order.findById(order[0]._id).populate('user', 'name email phone');
-    sendOrderStatusNotification(populatedOrder || order[0], 'Confirmed', req);
 
-    res.status(201).json(order[0]);
+    const isPineLabs = String(paymentMethod).toLowerCase().includes('pine labs');
+    const isOnlinePending = isOnline && (isPineLabs || paymentMethod.includes('Online') || paymentMethod === 'EMI');
+
+    if (!isOnlinePending) {
+      sendOrderStatusNotification(populatedOrder || order[0], 'Confirmed', req);
+    }
+
+    res.status(201).json({
+      ...order[0].toObject(),
+      requiresPayment: isOnlinePending,
+      paymentGateway: isPineLabs ? 'PINE_LABS' : (isOnline ? 'OTHER' : null),
+    });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
